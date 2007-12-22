@@ -2,6 +2,7 @@ input {
 	border-width:1px;
 	border-style:dotted;
 	font-size:130%;
+	border-color:silver
 }
 input.composeGridSharp {
 	background-color:rgb(220, 150, 150);
