@@ -31,6 +31,9 @@
 			<option value="">－选择韵部－</option>
 		</select>
 		<input type="text" id="focusHotel" style="border-style:none;width:0px;height:0px"/>
+		<br/>
+		<p>源流：<span id="id_cpSource"></span></p>
+		<p>要点：<span id="id_cpBrief"></span></p>
 	</div>
 	<div id="mainFrame"></div>
 	<div><p id="poemBoard"></p></div>
@@ -78,6 +81,10 @@
 			}
 			var cpDoc = hm.xml.loadXML(cpFile);
 			var curCp = new Cp_T(cpDoc);
+			var cpSrc = document.getElementById("id_cpSource");
+			var cpBrf = document.getElementById("id_cpBrief");
+			cpSrc.innerHTML = curCp.i_source;
+			cpBrf.innerHTML = curCp.i_abbr;
 			refreshICE(curCp);
 		}
 
