@@ -317,7 +317,7 @@
 				hinter.i_shouldHide = false;
 				hinter.style.display = "none";
 			}
-			
+
 			var writeBoard = $("mainFrame");
 			var poem = new Poem_T();
 			hm.dom.depthIterateNode(writeBoard, wordGetter, poem);
@@ -337,7 +337,7 @@
 			
 			window.setTimeout("assemblePoem()", 200);
 		}
-		
+
 		function gotoNextGrid(grid) {
 			if(grid.i_isEndOfAll)
 				return;
@@ -350,7 +350,7 @@
 		}
 		
 		function gotoPrevGrid(grid) {
-			if(grid.i_posX == 0)
+			if(grid.i_posX == 0 && grid.i_posY == 0)
 				return;
 			for(
 				var pg = grid.previousSibling; 
