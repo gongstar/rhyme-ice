@@ -1,0 +1,137 @@
+﻿body {
+	background-color : white;
+	background-image : url("img/bk.png");
+	background-repeat : no-repeat;
+	background-position : 56px 0px;
+	margin : 0px;
+}
+
+#left-banner {
+	background-image : url("img/leftBanner.png");
+	width : 86px;
+	height : 495px;
+	page-break-after : avoid;
+	display : inline-block;
+	overflow : hidden;
+}
+
+#top-banner {
+	background-image : url("img/topBanner.png");
+	left : 86px;
+	top : 0;
+	width : 712px;
+	height : 89px;
+	display : block;
+	position : absolute;
+}
+
+#main-board {
+	position : absolute;
+	left : 86px;
+	top : 89px;
+	width : 712px;
+	height : 406px;
+}
+
+#rhyme-catalog-select-area {
+	position : absolute;
+	width : 32px;
+	left : 6px;
+	top : 190px;
+}
+
+#cp-name-select-area {
+	position : absolute;
+	left : 48px;
+	top : 190px;
+	width : 32px;
+}
+
+#left-banner *.vertical-text {
+	color : white;
+	font-family : "楷体_gb2312";
+	font-size : 24px;
+	text-align : center;
+}
+
+.selector {
+	border-style : solid;
+	border-width : 1px;
+	border-color : gray;
+	background-image : url("img/sel-bk.png");
+	cursor : pointer;
+}
+
+.selector:hover {
+	background-image : url("img/sel-focus-bk.png");
+}
+
+#title-editor {
+	font-family : "黑体";
+	font-size : 28px;
+	text-align : center;
+	margin-top : 8px;
+	margin-bottom : 8px;
+}
+
+#content-editor {
+	font-family : "楷体_gb2312";
+	font-size : 24px;
+	margin-left : 10px;
+	margin-right : 10px;
+}
+
+#cp-info-banners {
+	position : absolute;
+	height : auto;
+	width : 100%;
+	bottom : 0;
+	background-image : url("img/sum-bk.png");
+	margin : 0;
+	border : 1px solid silver;
+}
+
+.text-inner-title {
+	font-weight : bold;
+}
+
+.paragraph-with-title {
+	margin-top : 0px;
+	margin-bottom : 0px;
+	padding-top : 0px;
+	padding-bottom : 0px;
+	line-height : 1.2em;
+}
+
+#cp-select-dialog {
+	width : 600px;
+}
+
+.ci-tag-name {
+	display : inline-block;
+	width : 30%;
+}
+
+.grid {
+	color : #D2D2D2;
+}
+
+.rhyme-grid {
+	border : solid 1px red;
+}
+
+.ping-sheng-grid {
+	background-color : #DDDDFF;
+}
+
+.zhe-sheng-grid {
+	background-color : #FFDDDD;
+}
+
+.zhong-sheng-grid {
+	background-color : #DDFFDD;
+}
+
+span.literal-grid {
+	color : black;
+}
