@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta name="generator" content="HTML Tidy for Windows (vers 14 February 2006), see www.w3.org" />
+
+	<link rel="stylesheet" href="ice.css" type="text/css" />
+
+	<script type="text/javascript" src="js/debug.js"></script>
+	<script type="text/javascript" src="js/prototype.js"></script>
+	<script type="text/javascript" src="js/SoftXMLLib.js"></script>
+	<script type="text/javascript" src="js/xml.js"></script>
+	<script type="text/javascript" src="js/cp.js"></script>
+	<script type="text/javascript" src="js/ci.js"></script>
+	<script type="text/javascript" src="js/editor.js"></script>
+	<script type="text/javascript" src="js/grid.js"></script>
+	<script type="text/javascript" src="js/ice.js"></script>
+
+	<title>集成填词环境</title>
+</head>
+
+<body onload="javascript:com.hm_x.ice.Controller.init()">
+	<div id="left-banner">
+		<div id="rhyme-catalog-select-area">
+			<div id="rhyme-catalog-label" class="vertical-text">韵部</div>
+			<div id="rhyme-kind" class="vertical-text selector">词林</div>
+			<div id="rhyme-catalog-name" class="vertical-text selector">点击选择韵部</div>
+		</div>
+		
+		<div id="cp-name-select-area">
+			<div id="cp-label" class="vertical-text">词牌</div>
+			<div id="cp-name" class="vertical-text selector">点击选择词牌</div>
+		</div>
+	</div>
+	
+	<div id="top-banner"></div>
+	<div id="main-board">
+		<div id="title-editor">
+			<span id="title-editor-cp-name">词牌</span>
+			<span id="title-editor-separator">·</span>
+			<span id="title-editor-title">标题</span>
+		</div>
+		<div id="content-editor"></div>
+		<div id="cp-info-banners">
+			<p class="paragraph-with-title"><span class="text-inner-title">注解：</span><span id="cp-comment-content">注解正文</span></p>
+			<p class="paragraph-with-title"><span class="text-inner-title">源流：</span><span id="cp-source-content">源流正文</span></p>
+			<p class="paragraph-with-title"><span class="text-inner-title">要点：</span><span id="cp-summary-content">要点正文</span></p>
+		</div>
+	</div>
+	
+	<div id="cp-select-dialog" multiple="true" size="10">
+		<select id="ci-tag-kind-selector">
+			<option value="1">= 选择类别 =</option>
+		</select>
+		<div id="ci-tag-list">
+		</div>
+	</div>
+</body>
+</html>
