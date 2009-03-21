@@ -1,0 +1,464 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta name="generator" content=
+"HTML Tidy for Windows (vers 1 May 2005), see www.w3.org" />
+<title>集成填词环境</title>
+<script type="text/javascript" src="js/prototype.js"></script>
+<script type="text/javascript" src="js/browser.js"></script>
+<script type="text/javascript" src="js/xml.js"></script>
+<script type="text/javascript" src="js/dom.js"></script>
+<script type="text/javascript" src="js/cp.js"></script>
+<script type="text/javascript" src="js/poem.js"></script>
+<script type="text/javascript" src="js/rhyme.js"></script>
+<script type="text/javascript" src="js/debug.js"></script>
+<link rel="stylesheet" type="text/css" href="ice.css" />
+</head>
+
+<body onKeyUp="javascript:onKeyStroke(event)">
+	<div id="topLine">
+		<span>选择词牌</span>
+		<select 
+			size="1" 
+			id="cpSelector" 
+			onchange="javascript:onChangeCp(this.options[this.selectedIndex].value)"
+		>
+			<option value="">－选择词牌－</option>
+		</select>
+		<span>选择韵部</span>
+		<select size="1" id="rhymeSelector">
+			<option value="">－选择韵部－</option>
+		</select>
+		<input type="text" id="focusHotel" style="border-style:none;width:0px;height:0px"/>
+		<br/>
+		<p>源流：<span id="id_cpSource"></span></p>
+		<p>要点：<span id="id_cpBrief"></span></p>
+	</div>
+	<div id="mainFrame"></div>
+	<div><p id="poemBoard"></p></div>
+	<div id="rhymeHintBoard" class="rhymeHinter" style="top:0;left:0;display:none;">－请选择韵部，以便给出提示－</div>
+	
+	<script type="text/javascript">
+		function CpItem_T(title, file) {
+			this.i_title = title;
+			this.i_file = file;
+		}
+
+		// 读取词牌清单	
+		var cpMap = hm.xml.loadXML("conf/cp.xml");
+		var cpArr = new Array;
+		var cpGetter = function local_cp_Getter(node, cpArray) {
+			if(node.tagName == "词牌") {
+				var theTitle = node.getAttribute("名");
+				var theFile  = node.getAttribute("源");
+				var idx = cpArray.length;
+				cpArray[idx] = new CpItem_T(theTitle, theFile);
+			}
+			return false;
+		}
+		hm.dom.depthIterateNode(cpMap.documentElement, cpGetter, cpArr);
+
+		// 构造词牌选择器
+		var cpOps = $("cpSelector").options;
+		cpArr.each(function(item){
+			var idx = cpOps.length;
+			cpOps[idx] = new Option(item.i_title, item.i_file);
+		});
+
+		var rhymeTable = new RhymeTable_T("conf/xy.xml");
+		// 构造韵部选择器
+		var rdOps = $("rhymeSelector").options;
+		rhymeTable.i_rhymeDepartList.each(function(rhymeDepart) {
+			rdOps[rdOps.length] = new Option(rhymeDepart, rhymeDepart);
+		});
+
+		// 词牌选择响应函数
+		function onChangeCp(cpFile) {
+			if(cpFile.length == 0) {
+				refreshICE(null);
+				return;
+			}
+			var cpDoc = hm.xml.loadXML(cpFile);
+			var curCp = new Cp_T(cpDoc);
+			var cpSrc = document.getElementById("id_cpSource");
+			var cpBrf = document.getElementById("id_cpBrief");
+			cpSrc.innerHTML = curCp.i_source;
+			cpBrf.innerHTML = curCp.i_abbr;
+			refreshICE(curCp);
+		}
+
+		var onRhymeSelectorClick = function(curSp) {
+			if(hm.browser.ie)
+				curSp = event.srcElement;
+			var h = $("rhymeHintBoard");
+			h.i_curSelected = curSp.firstChild.nodeValue;
+		};
+					
+		function addToRhymeHinter(hinter, rs, tone) {	// rs 是选中的韵部
+			var rd = rhymeTable.i_rhymeMatrix[rs][tone];
+			for(var i = 0; i < rd.length; ++i) {
+				var sp = hinter.appendChild(document.createElement("span"));
+				sp.appendChild(document.createTextNode(rd[i]));
+				if(hm.browser.ie)
+					sp.onclick = onRhymeSelectorClick;
+				else
+					sp.setAttribute("onclick", "javascript:onRhymeSelectorClick(this)");
+			}
+		}
+
+		function onGridFocus(grid) {
+			grid.i_isFocus = true;
+			window.i_curGrid = grid;
+			grid.i_origValue = grid.value;
+			if(grid.value && grid.value.length > 0)
+				grid.select();
+				
+			var hinter = $("rhymeHintBoard");
+			if(grid.i_isRhyme) {
+				hinter.i_shouldHide = false;
+				var rs = $("rhymeSelector").options[$("rhymeSelector").selectedIndex].value;
+				if(grid.hasClassName("composeGridDull"))
+					tone = "阴阳";
+				else if(grid.hasClassName("composeGridSharp"))
+					tone = "上去";
+				if(!rs.blank() && (!hinter.i_origRhyme || hinter.i_origRhyme != rs || !hinter.i_origTone || hinter.i_origTone != tone)) {
+					hm.dom.removeAllChildren(hinter);
+					hinter.i_origGrid = grid;
+					hinter.i_origRhyme = rs;
+					hinter.i_origTone = tone;
+					hinter.i_curSelected = null;
+					for(var i = 0; i < tone.length; ++i)
+						addToRhymeHinter(hinter, rs, tone.charAt(i));
+				}
+				
+				var pos = hm.dom.getAbsolutePosition(grid);
+				pos.y += grid.getHeight();
+				var hs = hinter.style;
+				hs.display = "inline";
+				hm.dom.setAbsolutePosition(hinter, pos.x, pos.y);
+			}
+		}
+		
+		function onGridBlur(grid) {
+			grid.i_isFocus = false;
+			if(window.i_curGrid == grid)
+				window.i_curGrid = null;
+			if(grid.i_isRhyme)
+				$("rhymeHintBoard").i_shouldHide = true;
+		}
+
+		function setupBlurAndFocusHandler(grid) {
+			if(!hm.browser.ie) {
+				grid.setAttribute("onBlur", "javascript:onGridBlur(this)");
+				grid.setAttribute("onFocus", "javascript:onGridFocus(this)");
+			}
+			else {
+				grid.setAttribute("onblur", function(){onGridBlur(event.srcElement)});
+				grid.setAttribute("onfocus", function(){onGridFocus(event.srcElement)});
+			}
+		}
+		
+		// 根据词牌，形成填写环境		
+		function refreshICE(cp) {
+			var writeBoard = $("mainFrame");
+			hm.dom.removeAllChildren(writeBoard);
+			if(cp == null)
+				return;
+
+			var lastAddedGrid = null;
+			for(var i = 0; i < cp.i_rule.length; ++i) {
+				var grid = makeComposeGrid(cp.i_rule.charAt(i));
+				if(grid) {
+					if(grid.i_isRhyme) {
+						grid.i_isRhyme = false;
+						if(lastAddedGrid) {
+							lastAddedGrid.className = lastAddedGrid.className + " rhyme";
+							lastAddedGrid.i_isRhyme = true;
+						}
+					}
+					else {
+						if(grid.i_ruleItem == "\n" && lastAddedGrid)
+							lastAddedGrid.i_isEndOfLine = true;
+
+						var lastAddedTemp = writeBoard.appendChild(grid);
+						if(lastAddedTemp.tagName && lastAddedTemp.tagName.toLowerCase() == "input"){
+							if(lastAddedGrid) {	
+								if(lastAddedGrid.i_isEndOfLine) { 
+									// 上一个格子是行尾，也就是说，本格子是行首
+									lastAddedTemp.i_posX = 0;
+									lastAddedTemp.i_posY = lastAddedGrid.i_posY + 1;
+								}
+								else {	// 在同一行的一个格子之后
+									lastAddedTemp.i_posX = lastAddedGrid.i_posX + 1;
+									lastAddedTemp.i_posY = lastAddedGrid.i_posY;
+								}
+							}
+							else {	// 没有上一个格子，这是第一个格子
+								lastAddedTemp.i_posX = 0;
+								lastAddedTemp.i_posY = 0;
+							}
+							lastAddedGrid = lastAddedTemp;
+							setupBlurAndFocusHandler(lastAddedGrid);
+						}
+					}
+				}
+			}
+			if(lastAddedGrid) {
+				lastAddedGrid.i_isEndOfLine = true;
+				lastAddedGrid.i_isEndOfAll = true;
+			}
+			
+			assemblePoem();
+		}
+
+		// 生成一个空格子（没有加入格律区分）
+		function makeNullGrid() {
+			var grid = document.createElement("input");
+			grid.setAttribute("type", "text");
+			grid.setAttribute("size", "1");
+			grid.setAttribute("maxLength", "1");
+			grid.i_isFocus = false;
+			Element.extend(grid);
+			return grid;
+		}
+
+		// 根据格律规则生成一个填词格子		
+		function makeComposeGrid(ruleItem) {
+			var grid = null;
+			switch(ruleItem) {
+			case "平":
+				grid = makeNullGrid();
+				grid.className = "composeGridDull";
+				break;
+			case "入":
+			case "仄":
+				grid = makeNullGrid();
+				grid.className = "composeGridSharp";
+				break;
+			case "中":
+				grid = makeNullGrid();
+				grid.className = "composeGridBin";
+				break;
+			case "\n":
+				grid = document.createElement("br");
+				break;
+			case "(":
+			case "（":
+			case ")":
+			case "）":
+				break;
+			case "韵":
+				grid = new Object();
+				grid.i_isRhyme = true;
+				break;
+			default:
+				grid = document.createTextNode(ruleItem);
+				break;
+			}
+			if(grid && grid.nodeType != hm.dom.nodeType.TEXT_NODE) {
+				grid.i_ruleItem = ruleItem;
+			}
+			return grid;
+		}
+
+		function wordCheck(node) {
+			var isGood = false;
+			if(node.hasClassName("composeGridDull"))
+				isGood = rhymeTable.isNullTone(node.value);
+			else if(node.hasClassName("composeGridSharp"))
+				isGood = rhymeTable.isSharpTone(node.value);
+				
+			if(!isGood)
+				node.addClassName("composeGridWarn");
+			else
+				node.removeClassName("composeGridWarn");
+		}
+		
+		var wordGetter = function local_word_Getter(node, poem) {
+			if(node.tagName && node.tagName.toLowerCase() == "input" && node.getAttribute("type").toLowerCase() == "text") {
+				var v = node.value;
+				poem.addWord(v);
+				if(v && v.length == 1)
+					wordCheck(node);
+				
+				// 这种奇怪的处理方式是为了适应很多汉字输入法，它们会在控件中插入值待选。
+				if(node.i_isFocus && v.length >= 1 && v.charCodeAt(0) > 255 && node.i_origValue != node.value) {
+					$("focusHotel").focus();
+					node.value = v;
+					poem.i_move = true;
+				}
+				else if(poem.i_move) {
+					node.focus();
+					poem.i_move = false;
+				}
+			}
+			else if(node.nodeType == hm.dom.nodeType.TEXT_NODE)
+				poem.addDelimit(node.nodeValue);
+			else if(node.tagName && node.tagName.toLowerCase() == "br")
+				poem.addDelimit("\n");
+			return false;
+		}
+
+		function assemblePoem() {
+			var curCp = $("cpSelector");
+			if(curCp.options[curCp.selectedIndex].value == "")
+				return;
+			
+			var hinter = $("rhymeHintBoard");
+			if(hinter.i_curSelected) {
+				hinter.i_origGrid.value = hinter.i_curSelected;
+				hinter.i_origGrid.i_origValue = hinter.i_curSelected;
+				hinter.i_origGrid.focus();
+				hinter.i_curSelected = null;
+				hinter.i_shouldHide = false;
+			}
+			if(hinter.i_shouldHide) {
+				hinter.i_shouldHide = false;
+				hinter.style.display = "none";
+			}
+
+			var writeBoard = $("mainFrame");
+			var poem = new Poem_T();
+			hm.dom.depthIterateNode(writeBoard, wordGetter, poem);
+			var board = $("poemBoard");
+			
+			var poemText = poem.getText();
+			if(!board.i_origText || board.i_origText.length == 0 || board.i_origText != poemText) {
+				hm.dom.removeAllChildren(board);
+				board.i_origText = poemText;
+				for(var i = 0; i < poemText.length; ++i) {
+					if(poemText.charAt(i) == "\n")
+						board.appendChild(document.createElement("br"));
+					else
+						board.appendChild(document.createTextNode(poemText.charAt(i)));
+				}
+			}
+			
+			window.setTimeout("assemblePoem()", 200);
+		}
+
+		function gotoNextGrid(grid) {
+			if(grid.i_isEndOfAll)
+				return;
+			for(
+				var ng = grid.nextSibling; 
+				typeof(ng.i_posX) == "undefined"; 
+				ng = ng.nextSibling
+			)	;
+			ng.focus();
+		}
+		
+		function gotoPrevGrid(grid) {
+			if(grid.i_posX == 0 && grid.i_posY == 0)
+				return;
+			for(
+				var pg = grid.previousSibling; 
+				typeof(pg.i_posX) == "undefined"; 
+				pg = pg.previousSibling
+			)	;
+			pg.focus();
+		}
+
+		function gotoNextLine(grid) {
+			for(
+				var nl = grid.nextSibling;
+				typeof(nl.i_posY) == "undefined" || nl.i_posY <= grid.i_posY || (nl.i_posX < grid.i_posX && typeof(nl.i_isEndOfLine) == "undefined");
+				nl = nl.nextSibling
+			) {
+				if(nl.i_isEndOfAll)	// 结尾，没有下一行
+					return;
+			}
+			nl.focus();
+		}
+
+		function gotoPrevLine(grid) {
+			if(grid.i_posY == 0)
+				return;
+			for(
+				var pl = grid.previousSibling;
+				typeof(pl.i_posY) == "undefined" || pl.i_posY >= grid.i_posY || pl.i_posX > grid.i_posX;
+				pl = pl.previousSibling
+			)	;
+			pl.focus();
+		}
+
+		function gotoLineHead(grid) {
+			if(grid.i_posX == 0)
+				return;
+			for(
+				var lh = grid.previousSibling;
+				typeof(lh.i_posX) == "undefined" || lh.i_posX > 0;
+				lh = lh.previousSibling
+			)	;
+			lh.focus();
+		}
+
+		function gotoLineTail(grid) {
+			if(grid.i_isEndOfLine)
+				return;
+			for(
+				var lt = grid.nextSibling;
+				!lt.i_isEndOfLine;
+				lt = lt.nextSibling
+			)	;
+			lt.focus();
+		}
+
+		function gotoAllHead(grid) {
+			if(grid.i_posX == 0 && grid.i_posY == 0)
+				return;
+			for(
+				var ah = grid.previousSibling;
+				typeof(ah.i_posX) == "undefined" || ah.i_posX > 0 || ah.i_posY > 0;
+				ah = ah.previousSibling
+			)	;
+			ah.focus();
+		}
+
+		function gotoAllTail(grid) {
+			if(grid.i_isEndOfAll)
+				return;
+			for(
+				var atail = grid.nextSibling;
+				!atail.i_isEndOfAll;
+				atail = atail.nextSibling
+			)	;
+			atail.focus();
+		}
+
+		function onKeyStroke(evt) {
+			var grid = window.i_curGrid;
+			if(!grid)
+				return;
+				
+			switch(evt.keyCode) {
+			case 37:	// 左
+				gotoPrevGrid(grid);
+				break;
+			case 39:	// 右
+				gotoNextGrid(grid);
+				break;
+			case 38:	// 上
+				gotoPrevLine(grid);
+				break;
+			case 40:	// 下
+				gotoNextLine(grid);
+				break;
+			case 36:	// home
+				gotoLineHead(grid);
+				break;
+			case 35:	// end
+				gotoLineTail(grid);
+				break;
+			case 33:	// pageUp
+				gotoAllHead(grid);
+				break;
+			case 34:	// pageDown
+				gotoAllTail(grid);
+				break;
+			}
+		}
+	</script>
+</body>
+</html>
