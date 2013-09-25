@@ -37,34 +37,45 @@
 	
 	var docSoftXML;
 	function load(xmlfile){
-		if (document.implementation && document.implementation.createDocument)
-			{
-				xmlDOMObjSoftXML = document.implementation.createDocument("", "", null);
-				xmlDOMObjSoftXML.async=false;
-			}
-			else if (window.ActiveXObject)
-			{
-				xmlDOMObjSoftXML = new ActiveXObject("Microsoft.XMLDOM");
-				xmlDOMObjSoftXML.async=false;
-			}
-			else
-			{
-				alert('Your browser can\'t handle this script');
+		if(window.XMLHttpRequest) {	// chrome 似乎只能用这种方法
+			var xhttp = new XMLHttpRequest();
+			if(xhttp && xhttp.open) {
+				xhttp.open("GET", xmlfile, false);
+				xhttp.send(null);
+				
+				if(xhttp.responseXML != null) {
+					xmlDOMObjSoftXML = xhttp.responseXML;
+					this.documentElement = xmlDOMObjSoftXML.documentElement;
+				}
+				else
+					this.loadError = 1;
+					
 				return;
 			}
+		}
+		
+		if (document.implementation && document.implementation.createDocument) {
+			xmlDOMObjSoftXML = document.implementation.createDocument("", "", null);
+			xmlDOMObjSoftXML.async=false;
+		}
+		else if (window.ActiveXObject) {
+			xmlDOMObjSoftXML = new ActiveXObject("Microsoft.XMLDOM");
+			xmlDOMObjSoftXML.async=false;
+		}
+		else {
+			alert('Your browser can\'t handle this script');
+			return;
+		}
 			
-			lSoftXML=xmlDOMObjSoftXML.load(xmlfile);
-			if(!lSoftXML){
-				this.loadError = 1;
-			}
-			else{
-				// modified by hotman_x
-				//SoftXMLLib.prototype.documentElement = xmlDOMObjSoftXML.documentElement;
-				this.documentElement = xmlDOMObjSoftXML.documentElement;
-			}
-			
-			
-			
+		lSoftXML=xmlDOMObjSoftXML.load(xmlfile);
+		if(!lSoftXML){
+			this.loadError = 1;
+		}
+		else{
+			// modified by hotman_x
+			//SoftXMLLib.prototype.documentElement = xmlDOMObjSoftXML.documentElement;
+			this.documentElement = xmlDOMObjSoftXML.documentElement;
+		}
 	}
 	
 	function getDocXML(){
@@ -150,7 +161,7 @@
 			}
 			prefSoftXML = this.prefix;
 			namespacesSoftXML = this.nameSpace;
-			if(document.all){	// for ie
+			if(document.all && window.external){	// for ie
 				var cxpath = new String(xpath).toLowerCase();
 				f = docSoftXML.selectNodes(xpath);
 				for(var i=0;i<f.length;i++){
@@ -198,7 +209,7 @@
 				return selectedNodes;
 			}
 			else{	// for not ie
-				if(navigator.userAgent.indexOf("Firefox")!=-1 || navigator.userAgent.indexOf("SeaMonkey")!=-1 || navigator.userAgent.indexOf("Netscape")!=-1){
+				if(navigator.userAgent.indexOf("Firefox")!=-1 || navigator.userAgent.indexOf("SeaMonkey")!=-1 || navigator.userAgent.indexOf("Netscape")!=-1 || navigator.userAgent.indexOf("Chrome")!=-1){
 						var xpe = new XPathEvaluator();
 						var nsResolver = xpe.createNSResolver(docSoftXML.ownerDocument.documentElement==null ? docSoftXML.documentElement : docSoftXML.ownerDocument.documentElement);
 						var headings = xpe.evaluate(xpath, docSoftXML, NSResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
@@ -206,6 +217,7 @@
 				else{
 						var headings = document.evaluate(xpath, docSoftXML, null, XPathResult.ANY_TYPE,null);
 				}
+				
 				try{	// neither ie, nor nn
 					var thisHeading = headings.iterateNext();	// throws in nn
 					while (thisHeading) {
