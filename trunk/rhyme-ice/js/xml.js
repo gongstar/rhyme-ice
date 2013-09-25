@@ -32,7 +32,20 @@ loadXML : function(xmlFile)
 		return null;
 
 	xmlDoc.async = false;
-	xmlDoc.load(xmlFile);
+	if(xmlDoc.load)
+		xmlDoc.load(xmlFile);
+	else {	// chrome 真是诡异
+		xmlDoc = null;
+		if(window.XMLHttpRequest) {	// chrome 似乎只能用这种方法
+			var xhttp = new XMLHttpRequest();
+			if(xhttp && xhttp.open) {
+				xhttp.open("GET", xmlFile, false);
+				xhttp.send(null);
+				
+				xmlDoc = xhttp.responseXML;
+			}
+		}
+	}
 	return xmlDoc;
 },
 
