@@ -7,26 +7,46 @@ if(!com.hm_x.ice)
 if(!com.hm_x.ice.Editor)
 	com.hm_x.ice.Editor = 
 {
+	doc : null,
+	
 	init : function(ciTag) {
 		$("title-editor-cp-name").innerHTML = ciTag.getName();
 		$("cp-comment-content").innerHTML = ciTag.getComment();
 		$("cp-source-content").innerHTML = ciTag.getSource();
 		$("cp-summary-content").innerHTML = ciTag.getSummary();
 		$("cp-name").innerHTML = ciTag.getName();
-		var editorNode = $("content-editor");
 		
+		if(!this.doc) {
+			this.doc = $("content-editor").contentWindow.document;
+			this.doc.designMode = "on";
+			this.doc.open();
+			this.doc.write(
+				'<?xml version="1.0" encoding="utf-8"?>\n'
+				+ '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"\n'
+    			+ '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n'
+				+ '<html xmlns="http://www.w3.org/1999/xhtml">\n'
+				+ '<head><link rel="stylesheet" href="editor.css" type="text/css" /></head>'
+				+ '<body></body></html>'
+			);
+			this.doc.close();
+		}
+		
+		var content = this.doc.body;
 		var parser = new com.hm_x.ice.Parser(ciTag.getMetricsText());
-		com.hm_x.xml.clearChildren(editorNode);
+		com.hm_x.xml.clearChildren(content);
+		var para = content.appendChild(this.doc.createElement("p"));
 		for(var grid = parser.nextGrid(); grid != null; grid = parser.nextGrid()) {
-			editorNode.appendChild(grid.getElement());
+			if(grid.metricsToken == '\n')
+				para = content.appendChild(this.doc.createElement("p"));
+			para.appendChild(grid.getElement());
 			if(grid.constructor == com.hm_x.ice.RhymeGrid)
-				editorNode.appendChild(new com.hm_x.ice.LiteralGrid("。").getElement());
+				para.appendChild(new com.hm_x.ice.LiteralGrid("。").getElement());
 		}
 	}
 };
 
 if(!com.hm_x.ice.Parser)
-	com.hm_x.ice.Parser = function(metricsText)
+	com.hm_x.ice.Parser = function(metricsText, doc)
 {
 	this.metricsText = metricsText;
 	this.metricsPointer = 0;
@@ -51,10 +71,10 @@ if(!com.hm_x.ice.Parser)
 				com.hm_x.debug.assert(endChar == "）", "当前格律描述字应为\"）\"，实际却是\"" + endChar + "\"。");
 				if(curChar == "叠")	// 对于 叠 必须要标出来，要不然不好判定
 					this.prevChar += curChar;
-				return new com.hm_x.ice.RhymeGrid(this.prevChar);
+				return new com.hm_x.ice.RhymeGrid(this.prevChar, doc);
 			}
 			else
-				return new com.hm_x.ice.LiteralGrid(curChar);
+				return new com.hm_x.ice.LiteralGrid(curChar, doc);
 		
 		case "平":
 		case "仄":
@@ -66,7 +86,7 @@ if(!com.hm_x.ice.Parser)
 			}
 			else {
 				this.prevChar = null;
-				return makeNormalGrid(curChar);
+				return makeNormalGrid(curChar, doc);
 			}
 		}
 	};
@@ -90,12 +110,14 @@ if(!com.hm_x.ice.Parser)
 }
 
 if(!com.hm_x.ice.Grid)
-	com.hm_x.ice.Grid = function (metricsToken)
+	com.hm_x.ice.Grid = function (metricsToken, doc)
 {
 	this.metricsToken = metricsToken;
+	if(!doc)
+		doc = document;
 	
-	var spanText = document.createTextNode(this.metricsToken);
-	this.ele = $(document.createElement("span"));
+	var spanText = doc.createTextNode(this.metricsToken);
+	this.ele = $(doc.createElement("span"));
 	this.ele.appendChild(spanText);
 	this.ele.addClassName("grid");
 	
@@ -105,44 +127,44 @@ if(!com.hm_x.ice.Grid)
 }
 
 if(!com.hm_x.ice.RhymeGrid)
-	com.hm_x.ice.RhymeGrid = function (metricsToken) 
+	com.hm_x.ice.RhymeGrid = function (metricsToken, doc) 
 {
 	this.superClass = selectNormalGrid(metricsToken.charAt(0));
-	this.superClass((metricsToken.charAt(0)));
+	this.superClass(metricsToken.charAt(0), doc);
 	this.ele.addClassName("rhyme-grid");
 	if(metricsToken.length == 2 && metricsToken.charAt(1) == "叠")
 		this.ele.firstChild.nodeValue = "叠";
 }
 
 if(!com.hm_x.ice.LiteralGrid)
-	com.hm_x.ice.LiteralGrid = function (metricsToken)
+	com.hm_x.ice.LiteralGrid = function (metricsToken, doc)
 {
 	this.superClass = com.hm_x.ice.Grid;
-	this.superClass((metricsToken));
+	this.superClass(metricsToken, doc);
 	this.ele.addClassName("literal-grid");
 }
 
 if(!com.hm_x.ice.PingGrid)
-	com.hm_x.ice.PingGrid = function (metricsToken)
+	com.hm_x.ice.PingGrid = function (metricsToken, doc)
 {
 	this.superClass = com.hm_x.ice.Grid;
-	this.superClass(metricsToken);
+	this.superClass(metricsToken, doc);
 	this.ele.addClassName("ping-sheng-grid");
 }
 
 if(!com.hm_x.ice.ZheGrid)
-	com.hm_x.ice.ZheGrid = function (metricsToken)
+	com.hm_x.ice.ZheGrid = function (metricsToken, doc)
 {
 	this.superClass = com.hm_x.ice.Grid;
-	this.superClass(metricsToken);
+	this.superClass(metricsToken, doc);
 	this.ele.addClassName("zhe-sheng-grid");
 }
 
 if(!com.hm_x.ice.ZhongGrid)
-	com.hm_x.ice.ZhongGrid = function (metricsToken)
+	com.hm_x.ice.ZhongGrid = function (metricsToken, doc)
 {
 	this.superClass = com.hm_x.ice.Grid;
-	this.superClass(metricsToken);
+	this.superClass(metricsToken, doc);
 	this.ele.addClassName("zhong-sheng-grid");
 }
 
@@ -159,7 +181,7 @@ function selectNormalGrid(metricsToken) {	// 除了带韵之外的格子
 	}
 }
 
-function makeNormalGrid(metricsToken) {
+function makeNormalGrid(metricsToken, doc) {
 	var gridClass = selectNormalGrid(metricsToken);
-	return new gridClass(metricsToken);
+	return new gridClass(metricsToken, doc);
 }
