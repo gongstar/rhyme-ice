@@ -37,23 +37,6 @@
 	
 	var docSoftXML;
 	function load(xmlfile){
-		if(window.XMLHttpRequest) {	// chrome 似乎只能用这种方法
-			var xhttp = new XMLHttpRequest();
-			if(xhttp && xhttp.open) {
-				xhttp.open("GET", xmlfile, false);
-				xhttp.send(null);
-				
-				if(xhttp.responseXML != null) {
-					xmlDOMObjSoftXML = xhttp.responseXML;
-					this.documentElement = xmlDOMObjSoftXML.documentElement;
-				}
-				else
-					this.loadError = 1;
-					
-				return;
-			}
-		}
-		
 		if (document.implementation && document.implementation.createDocument) {
 			xmlDOMObjSoftXML = document.implementation.createDocument("", "", null);
 			xmlDOMObjSoftXML.async=false;
@@ -66,15 +49,32 @@
 			alert('Your browser can\'t handle this script');
 			return;
 		}
-			
-		lSoftXML=xmlDOMObjSoftXML.load(xmlfile);
+		
+		var lSoftXML;
+		try {
+			lSoftXML = xmlDOMObjSoftXML.load(xmlfile);
+		}
+		catch(e) {
+			lSoftXML = this._loadByXHTTP(xmlfile);
+		}
+		
 		if(!lSoftXML){
 			this.loadError = 1;
 		}
 		else{
 			// modified by hotman_x
 			//SoftXMLLib.prototype.documentElement = xmlDOMObjSoftXML.documentElement;
-			this.documentElement = xmlDOMObjSoftXML.documentElement;
+			this.documentElement = lSoftXML.documentElement;
+		}
+	}
+	
+	// IE 10 与 chrome 都采用了这种方式，并且默认不允许用来打开本地文件！
+	function _loadByXHTTP(xmlfile) {
+		var xhttp = new XMLHttpRequest();
+		if(xhttp && xhttp.open) {
+			xhttp.open("GET", xmlfile, false);
+			xhttp.send(null);
+			return xhttp.responseXML;
 		}
 	}
 	
@@ -432,6 +432,7 @@
 		this.loadXMLError = 0;
 		this.loadError = 0;
 		this.load = load;
+		this._loadByXHTTP = _loadByXHTTP;
 		this.selectNodes = selectNodes;
 		this.loadXML = loadXML;
 		this.self = null;
