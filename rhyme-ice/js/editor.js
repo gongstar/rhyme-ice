@@ -7,7 +7,7 @@ if(!com.hm_x.ice)
 if(!com.hm_x.ice.Editor)
 	com.hm_x.ice.Editor = 
 {
-	doc : null,
+	format : null,
 	
 	init : function(ciTag) {
 		$("title-editor-cp-name").innerHTML = ciTag.getName();
@@ -16,28 +16,16 @@ if(!com.hm_x.ice.Editor)
 		$("cp-summary-content").innerHTML = ciTag.getSummary();
 		$("cp-name").innerHTML = ciTag.getName();
 		
-		if(!this.doc) {
-			this.doc = $("content-editor").contentWindow.document;
-			this.doc.designMode = "on";
-			this.doc.open();
-			this.doc.write(
-				'<?xml version="1.0" encoding="utf-8"?>\n'
-				+ '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"\n'
-    			+ '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n'
-				+ '<html xmlns="http://www.w3.org/1999/xhtml">\n'
-				+ '<head><link rel="stylesheet" href="editor.css" type="text/css" /></head>'
-				+ '<body></body></html>'
-			);
-			this.doc.close();
+		if(!this.format) {
+			this.format = $("format-shower");
 		}
 		
-		var content = this.doc.body;
 		var parser = new com.hm_x.ice.Parser(ciTag.getMetricsText());
-		com.hm_x.xml.clearChildren(content);
-		var para = content.appendChild(this.doc.createElement("p"));
+		com.hm_x.xml.clearChildren(this.format);
+		var para = this.format.appendChild(document.createElement("p"));
 		for(var grid = parser.nextGrid(); grid != null; grid = parser.nextGrid()) {
 			if(grid.metricsToken == '\n')
-				para = content.appendChild(this.doc.createElement("p"));
+				para = this.format.appendChild(document.createElement("p"));
 			para.appendChild(grid.getElement());
 			if(grid.constructor == com.hm_x.ice.RhymeGrid)
 				para.appendChild(new com.hm_x.ice.LiteralGrid("。").getElement());
