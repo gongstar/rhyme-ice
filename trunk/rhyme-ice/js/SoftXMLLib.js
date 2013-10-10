@@ -53,6 +53,8 @@
 		var lSoftXML;
 		try {
 			lSoftXML = xmlDOMObjSoftXML.load(xmlfile);
+			if(lSoftXML)
+				lSoftXML = xmlDOMObjSoftXML;
 		}
 		catch(e) {
 			lSoftXML = this._loadByXHTTP(xmlfile);
@@ -73,6 +75,10 @@
 		var xhttp = new XMLHttpRequest();
 		if(xhttp && xhttp.open) {
 			xhttp.open("GET", xmlfile, false);
+			// 对于 IE 10 来说，没这个就不能调用 XPath 等有关功能
+			if(com.hm_x.common.isIE && com.hm_x.common.ieVer >= 10)
+				xhttp.responseType = "msxml-document";
+				
 			xhttp.send(null);
 			return xhttp.responseXML;
 		}
@@ -161,7 +167,7 @@
 			}
 			prefSoftXML = this.prefix;
 			namespacesSoftXML = this.nameSpace;
-			if(document.all && window.external){	// for ie
+			if(com.hm_x.common.isIE){	// for ie below 10
 				var cxpath = new String(xpath).toLowerCase();
 				f = docSoftXML.selectNodes(xpath);
 				for(var i=0;i<f.length;i++){
@@ -208,7 +214,7 @@
 				}
 				return selectedNodes;
 			}
-			else{	// for not ie
+			else{	// for not ie below 10
 				if(navigator.userAgent.indexOf("Firefox")!=-1 || navigator.userAgent.indexOf("SeaMonkey")!=-1 || navigator.userAgent.indexOf("Netscape")!=-1 || navigator.userAgent.indexOf("Chrome")!=-1){
 						var xpe = new XPathEvaluator();
 						var nsResolver = xpe.createNSResolver(docSoftXML.ownerDocument.documentElement==null ? docSoftXML.documentElement : docSoftXML.ownerDocument.documentElement);
