@@ -111,7 +111,7 @@ if(!com.hm_x.ice.CiTag)
 	// 初始化块
 	this.dom = com.hm_x.xml.loadXML(xfn);
 	if(this.dom.loadError) {
-		var errMsg = "载入词牌“" + tagNode.getAttribute("名") + "”失败！"
+		var errMsg = "载入词牌文件“" + xfn + "”失败！"
 		alert(errMsg);
 	}
 }

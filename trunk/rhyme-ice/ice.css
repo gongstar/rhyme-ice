@@ -75,15 +75,44 @@
 }
 
 #content-editor-container {
-	margin-left: 10px;
-	margin-right: 10px;
-	height: 260px;
+	width: 100%;
 }
 
 #content-editor {
-	width: 100%;
-	height: 100%;
+	height: 260px;
+	font-family: 楷体;
+}
+
+#format-shower {
+	margin-left: 10px;
+	margin-right: 10px;
+	height: 260px;
 	border : 1px solid #BBCCDD;
+	font-family: 楷体;
+}
+
+.grid {
+	color : #D2D2D2;
+}
+
+.rhyme-grid {
+	border : solid 1px red;
+}
+
+.ping-sheng-grid {
+	background-color : #DDDDFF;
+}
+
+.zhe-sheng-grid {
+	background-color : #FFDDDD;
+}
+
+.zhong-sheng-grid {
+	background-color : #DDFFDD;
+}
+
+span.literal-grid {
+	color : black;
 }
 
 #cp-info-banners {
