@@ -48,7 +48,12 @@ if(typeof(com.hm_x.ice.Controller) == "undefined" || !com.hm_x.ice.Controller)
 		ciTagList.each(function(ciTag, i){
 			var ciTagName = ciTag.getAttribute("名");
 			var tagNode = document.createElement("span");
-			tagNode.setAttribute("源", ciTag.getAttribute("源"));
+			try {
+			tagNode.setAttribute("ice-source", ciTag.getAttribute("源"));
+			} catch(e) {
+				alert(e);
+				throw e;
+			}
 			tagNode.appendChild(document.createTextNode(ciTagName));
 			$(tagSelector.appendChild(tagNode)).addClassName("ci-tag-name");
 		});
@@ -58,6 +63,6 @@ if(typeof(com.hm_x.ice.Controller) == "undefined" || !com.hm_x.ice.Controller)
 	
 	onClickCiTagDialog : function(evt) {
 		var ele = evt.element();
-		this.loadCiTag(ele.getAttribute("源"));
+		this.loadCiTag(ele.getAttribute("ice-source"));
 	}
 };
