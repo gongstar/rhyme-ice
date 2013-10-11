@@ -33,11 +33,22 @@ if(typeof(com.hm_x.ice.Controller) == "undefined" || !com.hm_x.ice.Controller)
 		});
 
 		Event.observe("ci-tag-kind-selector", "change", this.onShowCiTagList.bindAsEventListener(this, kindSelector));
+		Event.observe("cp-name", "click", this.onSelectCiTag.bindAsEventListener(this));
+		$("cp-select-dialog").hide();
+		
+		com.hm_x.ice.Editor.init();
 	},
 	
 	loadCiTag : function(ciTagSrc) {
 		this.currentCiTag = this.cpCatalog.createCiTag(ciTagSrc);
 		com.hm_x.ice.Editor.init(this.currentCiTag);
+	},
+	
+	onSelectCiTag : function(evt) {
+		if($("cp-select-dialog").visible())
+			$("cp-select-dialog").hide();
+		else
+			$("cp-select-dialog").show();
 	},
 	
 	onShowCiTagList : function(evt, kindSelector) {
@@ -64,5 +75,6 @@ if(typeof(com.hm_x.ice.Controller) == "undefined" || !com.hm_x.ice.Controller)
 	onClickCiTagDialog : function(evt) {
 		var ele = evt.element();
 		this.loadCiTag(ele.getAttribute("ice-source"));
+		$("cp-select-dialog").hide();
 	}
 };

@@ -10,6 +10,9 @@ if(!com.hm_x.ice.Editor)
 	format : null,
 	
 	init : function(ciTag) {
+		if(!ciTag)
+			return;
+			
 		$("title-editor-cp-name").innerHTML = ciTag.getName();
 		$("cp-comment-content").innerHTML = ciTag.getComment();
 		$("cp-source-content").innerHTML = ciTag.getSource();

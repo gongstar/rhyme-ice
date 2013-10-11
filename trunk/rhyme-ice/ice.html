@@ -41,7 +41,10 @@
 			<span id="title-editor-separator">·</span>
 			<span id="title-editor-title">标题</span>
 		</div>
-		<div id="content-editor-container"><div id="format-shower"></div></div>
+		<div id="content-editor-container">
+			<div id="format-shower"></div>
+			<textarea id="content-editor"></textarea>
+		</div>
 		<div id="cp-info-banners">
 			<p class="paragraph-with-title"><span class="text-inner-title">注解：</span><span id="cp-comment-content">注解正文</span></p>
 			<p class="paragraph-with-title"><span class="text-inner-title">源流：</span><span id="cp-source-content">源流正文</span></p>
@@ -49,7 +52,7 @@
 		</div>
 	</div>
 	
-	<div id="cp-select-dialog" multiple="true" size="10">
+	<div id="cp-select-dialog" multiple="true" size="10" style="display:none">
 		<select id="ci-tag-kind-selector">
 			<option value="1">= 选择类别 =</option>
 		</select>
