@@ -82,30 +82,36 @@ if(!com.hm_x.ice.CiTag)
 	
 	this._getTextByPath = function(path) {
 		var res = this.dom.selectNodes(path);
-		if(res.length)
+		if(res.length) {
 			return res[0].innerText;
+		}
 		else
 			return null;
 	};
 	
 	this.getName = function() {
-		return this._getTextByPath("/词牌/词牌名/text()");
+		return this._getTextByPath("/词牌/词牌名");
 	};
 	
 	this.getSource = function() {
 		return this._getTextByPath("/词牌/来源");
 	};
 	
-	this.getSummary = function() {
-		return this._getTextByPath("/词牌/要点");
+	this.getSummary = function(idx) {
+		return this._getTextByPath("/词牌/格律[" + idx + "]/格");
 	};
 	
-	this.getComment = function() {
-		return this._getTextByPath("/词牌/注解");
+	this.getComment = function(idx) {
+		return this._getTextByPath("/词牌/格律[" + idx + "]/注");
 	};
 	
-	this.getMetricsText = function() {
-		return this._getTextByPath("/词牌/格律");
+	this.getMetricsText = function(idx) {
+		return this._getTextByPath("/词牌/格律[" + idx + "]/律");
+	};
+	
+	this.getFormatCount = function() {
+		var res = this.dom.selectNodes("/词牌/格律");
+		return res.length;
 	};
 	
 	// 初始化块

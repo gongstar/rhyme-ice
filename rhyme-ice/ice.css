@@ -116,6 +116,7 @@
 }
 
 #format-shower span {
+	display: inline-block;
 	margin : 0px;
 }
 

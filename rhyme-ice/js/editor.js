@@ -12,18 +12,45 @@ if(!com.hm_x.ice.Editor)
 	init : function(ciTag) {
 		if(!ciTag)
 			return;
+		this.ciTag = ciTag;
 			
-		$("title-editor-cp-name").innerHTML = ciTag.getName();
-		$("cp-comment-content").innerHTML = ciTag.getComment();
-		$("cp-source-content").innerHTML = ciTag.getSource();
-		$("cp-summary-content").innerHTML = ciTag.getSummary();
 		$("cp-name").innerHTML = ciTag.getName();
+		$("title-editor-cp-name").innerHTML = ciTag.getName();
+		$("cp-source-content").innerHTML = ciTag.getSource();
+
+		while($("format-selector").firstChild != $("format-selector").lastChild)
+			$("format-selector").removeChild($("format-selector").lastChild);
+		var formatCount = ciTag.getFormatCount();
+		if(formatCount > 1) {
+			for(i = 0; i < formatCount; ++i) {
+				var idx = i + 1;
+				var opt = document.createElement("option");
+				opt.setAttribute("value", "" + idx);
+				opt.appendChild(document.createTextNode("格" + idx));
+				$("format-selector").appendChild(opt);
+			}
+			$("format-selector").show();
+		}
+		else
+			$("format-selector").hide();
+		if(!this.onChangeFormat.listening) {
+			Event.observe("format-selector", "change", this.onChangeFormat.bind(this, $("format-selector")));
+			this.onChangeFormat.listening = true;
+		}
 		
 		if(!this.format) {
 			this.format = $("format-shower");
 		}
+		this.onChangeFormat($("format-selector"));
+	},
+	
+	onChangeFormat : function(formatSelector) {
+		formatIdx = parseInt(formatSelector.value, 10);
 		
-		var parser = new com.hm_x.ice.Parser(ciTag.getMetricsText());
+		$("cp-comment-content").innerHTML = this.ciTag.getComment(formatIdx);
+		$("cp-summary-content").innerHTML = this.ciTag.getSummary(formatIdx);
+		
+		var parser = new com.hm_x.ice.Parser(this.ciTag.getMetricsText(formatIdx));
 		com.hm_x.xml.clearChildren(this.format);
 		var para = this.format.appendChild(document.createElement("p"));
 		for(var grid = parser.nextGrid(); grid != null; grid = parser.nextGrid()) {
