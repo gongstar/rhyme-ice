@@ -98,14 +98,20 @@ if(!com.hm_x.ice.CiTag)
 	};
 	
 	this.getSummary = function(idx) {
+		if(com.hm_x.common.isIE && com.hm_x.common.ieVer < 10)
+			--idx;	// IE 10 以下版本与标准不符，从0开始计数
 		return this._getTextByPath("/词牌/格律[" + idx + "]/格");
 	};
 	
 	this.getComment = function(idx) {
+		if(com.hm_x.common.isIE && com.hm_x.common.ieVer < 10)
+			--idx;	// IE 10 以下版本与标准不符，从0开始计数
 		return this._getTextByPath("/词牌/格律[" + idx + "]/注");
 	};
 	
 	this.getMetricsText = function(idx) {
+		if(com.hm_x.common.isIE && com.hm_x.common.ieVer < 10)
+			--idx;	// IE 10 以下版本与标准不符，从0开始计数
 		return this._getTextByPath("/词牌/格律[" + idx + "]/律");
 	};
 	

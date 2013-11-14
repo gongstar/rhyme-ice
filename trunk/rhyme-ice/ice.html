@@ -13,6 +13,7 @@
 	<script type="text/javascript" src="js/SoftXMLLib.js"></script>
 	<script type="text/javascript" src="js/xml.js"></script>
 	<script type="text/javascript" src="js/cp.js"></script>
+	<script type="text/javascript" src="js/rhyme.js"></script>
 	<script type="text/javascript" src="js/ci.js"></script>
 	<script type="text/javascript" src="js/editor.js"></script>
 	<script type="text/javascript" src="js/ice.js"></script>
@@ -53,12 +54,19 @@
 		</div>
 	</div>
 	
-	<div id="cp-select-dialog" multiple="true" size="10" style="display:none">
+	<div id="cp-select-dialog" class="popup-block" multiple="true" size="10" style="display:none">
 		<select id="ci-tag-kind-selector">
 			<option value="1">= 选择类别 =</option>
 		</select>
 		<div id="ci-tag-list">
 		</div>
+	</div>
+	<div id="rhyme-kind-content" class="popup-block" style="display:none">
+		<p id="ci-lin-zheng-yun" class="rhyme-kind-item selectable-item">词林正韵（简编）</p>
+		<p id="ping-shui-yun" class="rhyme-kind-item selectable-item">平水韵</p>
+		<p id="zhong-hua-xin-yun" class="rhyme-kind-item selectable-item">中华新韵</p>
+	</div>
+	<div id="rhyme-catalog-content" class="popup-block" style="display:none">
 	</div>
 </body>
 </html>
