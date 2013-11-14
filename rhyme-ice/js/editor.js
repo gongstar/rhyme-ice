@@ -80,14 +80,12 @@ if(!com.hm_x.ice.Parser)
 		case "（":
 			if(this.prevChar) {
 				curChar = this._nextChar();
-				com.hm_x.debug.assert("韵叠叶".indexOf(curChar) != -1, "当前格律描述字应为\"韵叠叶\"三字之一，实际却是\"" + curChar + "\"。");
-				if(curChar != "韵") {	// 那就是“叠”或"叶"咯
-					var rhymeChar = this._nextChar();
-					com.hm_x.debug.assert(rhymeChar == "韵", "当前格律描述字应为\"韵\"，实际却是\"" + rhymeChar + "\"。");
-				}
+				com.hm_x.debug.assert("韵叠叶换".indexOf(curChar) != -1, "当前格律描述字应为\"韵叠叶换\"四字之一，实际却是\"" + curChar + "\"。");
+				if(curChar != "韵")	// “叶韵”、“叠韵”和“换韵”总是两个字，要跳过去一个
+					com.hm_x.debug.assert(this._nextChar() == "韵");
 				var endChar = this._nextChar();
 				com.hm_x.debug.assert(endChar == "）", "当前格律描述字应为\"）\"，实际却是\"" + endChar + "\"。");
-				if(curChar == "叠")	// 对于 叠 必须要标出来，要不然不好判定
+				if(curChar != "韵")	// 对于 叠、叶、换 必须要标出来，要不然不好判定
 					this.prevChar += curChar;
 				return new com.hm_x.ice.RhymeGrid(this.prevChar, doc);
 			}
@@ -150,8 +148,8 @@ if(!com.hm_x.ice.RhymeGrid)
 	this.superClass = selectNormalGrid(metricsToken.charAt(0));
 	this.superClass(metricsToken.charAt(0), doc);
 	this.ele.addClassName("rhyme-grid");
-	if(metricsToken.length == 2 && metricsToken.charAt(1) == "叠")
-		this.ele.firstChild.nodeValue = "叠";
+	if(metricsToken.length > 1)
+		this.ele.firstChild.nodeValue = metricsToken.charAt(1);
 }
 
 if(!com.hm_x.ice.LiteralGrid)

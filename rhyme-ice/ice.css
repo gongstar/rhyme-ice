@@ -166,15 +166,23 @@ span.literal-grid {
 	line-height : 1.2em;
 }
 
+.popup-block {
+	border : 1px solid silver;
+	background-color : #EEEE99;
+	overflow : auto;
+}
+
+.selectable-item:hover {
+	background-color: #DDDDDD;
+	cursor: pointer;
+}
+
 #cp-select-dialog {
 	position : absolute;
 	left : 81px;
 	top : 190px;
 	width : 600px;
 	height : 300px;
-	border : 1px solid silver;
-	background-color : #EEEE99;
-	overflow : auto;
 }
 
 .ci-tag-name {
@@ -182,7 +190,44 @@ span.literal-grid {
 	width : 30%;
 }
 
-.ci-tag-name:hover {
-	background-color: #DDDDDD;
-	cursor: pointer;
+#rhyme-kind-content {
+	position: absolute;
+	left : 40px;
+	top : 248px;
+	max-width: 400px;
+	min-height: 60px;
+}
+
+.rhyme-kind-item {
+	font-family: 黑体;
+	font-size : 24px;
+}
+
+#rhyme-catalog-content {
+	position : absolute;
+	left : 40px;
+	top : 90px;
+	width : 600px;
+	height : 393px;
+}
+
+.rhyme-dept-title {
+}
+
+.rhyme-tone-title {
+	display : inline-block;
+	min-width: 100px;
+	margin-left: 25px;
+}
+
+.rhyme-tone-title .name{
+	font-weight: bold;
+	margin-right: 10px;
+}
+
+.rhyme-tone-title .descript{
+}
+
+.rhyme-tone-title-block {
+	display : inline-block;
 }

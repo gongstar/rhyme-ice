@@ -167,7 +167,7 @@
 			}
 			prefSoftXML = this.prefix;
 			namespacesSoftXML = this.nameSpace;
-			if(com.hm_x.common.isIE){	// for ie below 10
+			if(com.hm_x.common.isIE){
 				var cxpath = new String(xpath).toLowerCase();
 				f = docSoftXML.selectNodes(xpath);
 				for(var i=0;i<f.length;i++){
@@ -214,7 +214,7 @@
 				}
 				return selectedNodes;
 			}
-			else{	// for not ie below 10
+			else{
 				if(navigator.userAgent.indexOf("Firefox")!=-1 || navigator.userAgent.indexOf("SeaMonkey")!=-1 || navigator.userAgent.indexOf("Netscape")!=-1 || navigator.userAgent.indexOf("Chrome")!=-1){
 						var xpe = new XPathEvaluator();
 						var nsResolver = xpe.createNSResolver(docSoftXML.ownerDocument.documentElement==null ? docSoftXML.documentElement : docSoftXML.ownerDocument.documentElement);
