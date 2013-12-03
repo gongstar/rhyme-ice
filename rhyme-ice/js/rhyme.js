@@ -15,34 +15,38 @@ if(!com.hm_x.ice.Rhyme)
 	this.abbr = this.doc.documentElement.getAttribute("简称");
 	this.rhymeList = null;
 	
-	this.getRhymeList = function() {
-		if(!this.rhymeList) {
-			nodes = this.doc.selectNodes("/韵书/韵");
-			list = [];
-			nodes.each(function(it){
-				list[list.length] = new com.hm_x.ice.Rhyme.Dept(it.objectN, this);
-			});
-			this.rhymeList = list;
-		}
+	this.getDeptList = function() {
+		if(!this.rhymeList)
+			this._makeDeptList();
 			
 		return this.rhymeList;
 	}
+	
+	this._makeDeptList = function() {
+		var nodes = this.doc.selectNodes("/韵书/韵");
+		var list = [];
+		var Dept = this.constructor.Dept;
+		nodes.each(function(it){
+			list[list.length] = new Dept(it.objectN, this);
+		});
+		this.rhymeList = list;
+	};
 }
 
 // 新声韵
 if(!com.hm_x.ice.NewRhyme)
 	com.hm_x.ice.NewRhyme = function() 
 {
-    this.base = com.hm_x.ice.Rhyme;
-    this.base("conf/xy.xml");
+   this.base = com.hm_x.ice.Rhyme;
+   this.base("conf/xy.xml");
 }
 
 // 平水韵
 if(!com.hm_x.ice.PsRhyme)
     com.hm_x.ice.PsRhyme = function()
 {
-    this.base = com.hm_x.ice.Rhyme;
-    this.base("conf/ps.xml");
+   this.base = com.hm_x.ice.Rhyme;
+   this.base("conf/ps.xml");
 }
 
 // 词林正韵
@@ -73,11 +77,14 @@ if(!com.hm_x.ice.Rhyme.Dept)
 	}
 }
 
+if(!com.hm_x.ice.ClRhyme.Dept)
+	com.hm_x.ice.ClRhyme.Dept = com.hm_x.ice.Rhyme.Dept;
+
 if(!com.hm_x.ice.Rhyme.Dept.Tone)
 	com.hm_x.ice.Rhyme.Dept.Tone = function(toneNode, dept)
 {
 	this.node = toneNode;
 	this.dept = dept;
 	this.name = this.node.getAttribute('名');
-	this.dept = this.node.getAttribute('部');	// 对应原平水韵部
+	this.dept = this.node.getAttribute('部');	// 对应原广韵韵部
 }
