@@ -116,7 +116,7 @@ if(typeof(com.hm_x.ice.Controller) == "undefined" || !com.hm_x.ice.Controller)
 		var catCont = $("rhyme-catalog-content");
 		com.hm_x.xml.clearChildren(catCont);
 		
-		this.rhyme.getRhymeList().each(function(dept){
+		this.rhyme.getDeptList().each(function(dept){
 			var title = $(document.createElement("p"));
 			title.appendChild(document.createTextNode(dept.name));
 			title = $(catCont.appendChild(title));
@@ -128,18 +128,13 @@ if(typeof(com.hm_x.ice.Controller) == "undefined" || !com.hm_x.ice.Controller)
 				toneList.each(function(tone){
 					var toneTitle = $(toneBlock.appendChild(document.createElement("div")));
 					var toneName = $(toneTitle.appendChild(document.createElement("span")));
-					toneName.appendChild(document.createTextNode(tone.Name + '声'));
+					toneName.appendChild(document.createTextNode(tone.name + '声'));
 					toneName.addClassName("name");
 					if(tone.dept) {
 						var toneDept = $(toneTitle.appendChild(document.createElement("span")));
-						toneDept.appendChild(document.createTextNode(tone.dept));
+						toneDept.appendChild(document.createTextNode(tone.origDept));
 						toneDept.addClassName("descript");
 					}
-					/*var cont = '<span class="name">' + tone.name + '声</span>';
-					if(tone.dept)
-						cont += '<span class="descript">' + tone.dept + '</span>';
-					toneTitle.innerHTML = cont;
-					*/
 					toneTitle.addClassName("rhyme-tone-title");
 					toneTitle.addClassName("selectable-item");
 				});
