@@ -12,9 +12,8 @@ if(typeof(com.hm_x.ice.Controller) == "undefined" || !com.hm_x.ice.Controller)
 	cpCatalog : com.hm_x.ice.CpCatalog,
 
 	init : function() {
-		Event.observe("rhyme-kind", "click", this.onShowRhymeKind.bindAsEventListener(this));
-		Event.observe("rhyme-kind-content", "click", this.onSelectRhymeKind.bindAsEventListener(this));
-		Event.observe("rhyme-catalog-name", "click", this.onShowRhymeCatalog.bindAsEventListener(this));
+		this.widget = new com.hm_x.ice.IceWidget(document.body);
+		this.widget.controller = this;
 		this.onSelectRhymeKind();
 		
 		var cpCatalog = this.cpCatalog;
@@ -64,12 +63,7 @@ if(typeof(com.hm_x.ice.Controller) == "undefined" || !com.hm_x.ice.Controller)
 		ciTagList.each(function(ciTag, i){
 			var ciTagName = ciTag.getAttribute("名");
 			var tagNode = document.createElement("span");
-			try {
 			tagNode.setAttribute("ice-source", ciTag.getAttribute("源"));
-			} catch(e) {
-				alert(e);
-				throw e;
-			}
 			tagNode.appendChild(document.createTextNode(ciTagName));
 			tagNode = $(tagSelector.appendChild(tagNode));
 			tagNode.addClassName("ci-tag-name");
@@ -85,71 +79,24 @@ if(typeof(com.hm_x.ice.Controller) == "undefined" || !com.hm_x.ice.Controller)
 		$("cp-select-dialog").hide();
 	},
 	
-	onShowRhymeKind : function(evt) {
-		var kindCont = $("rhyme-kind-content");
-		if(kindCont.visible())
-			kindCont.hide();
-		else
-			kindCont.show();
-	},
-	
-	onSelectRhymeKind : function(evt) {
-		$("rhyme-kind-content").hide();
-		
-		var kind = (evt ? evt.element() : $("ci-lin-zheng-yun"));
-		if(kind.id == this.rhymeKind)
-			return;
-		this.rhymeKind = kind.id;
-			
+	onSelectRhymeKind : function(kindId) {
 		var ctor = com.hm_x.ice.ClRhyme;
-		if(kind.id == "ping-shui-yun")
+		if(kindId == "ping-shui-yun")
 			ctor = com.hm_x.ice.PsRhyme;
-		else if(kind.id == "zhong-hua-xin-yun")
+		else if(kindId == "zhong-hua-xin-yun")
 			ctor = com.hm_x.ice.NewRhyme;
 		
 		this.rhyme = new ctor();
-		$("rhyme-kind").innerHTML = this.rhyme.abbr;
-		this.updateRhymeCatalog();
+		this.widget.rhymeKindButton.setCaption(this.rhyme.abbr);
+		this.updateRhymeDept();
 	},
 	
-	updateRhymeCatalog : function() {
-		var catCont = $("rhyme-catalog-content");
-		com.hm_x.xml.clearChildren(catCont);
+	updateRhymeDept : function() {
+		var deptWidget = this.widget.rhymeDeptWidget;
+		deptWidget.clear();
 		
 		this.rhyme.getDeptList().each(function(dept){
-			var title = $(document.createElement("p"));
-			title.appendChild(document.createTextNode(dept.name));
-			title = $(catCont.appendChild(title));
-			title.addClassName("rhyme-dept-title");
-			
-			var toneList = dept.getToneList();
-			if(toneList.length > 0) {
-				var toneBlock = $(title.appendChild(document.createElement("div")));
-				toneList.each(function(tone){
-					var toneTitle = $(toneBlock.appendChild(document.createElement("div")));
-					var toneName = $(toneTitle.appendChild(document.createElement("span")));
-					toneName.appendChild(document.createTextNode(tone.name + '声'));
-					toneName.addClassName("name");
-					if(tone.dept) {
-						var toneDept = $(toneTitle.appendChild(document.createElement("span")));
-						toneDept.appendChild(document.createTextNode(tone.desc));
-						toneDept.addClassName("descript");
-					}
-					toneTitle.addClassName("rhyme-tone-title");
-					toneTitle.addClassName("selectable-item");
-				});
-			}
-			else {	// 否则直接选择韵部即可，比如平水韵即为如此
-				title.addClassName("selectable-item");
-			}
+			deptWidget.addDept(dept);
 		});
 	},
-	
-	onShowRhymeCatalog : function(evt) {
-		var catCont = $("rhyme-catalog-content");
-		if(catCont.visible())
-			catCont.hide();
-		else
-			catCont.show();
-	}
 };
