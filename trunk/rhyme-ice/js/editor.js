@@ -81,7 +81,7 @@ if(!com.hm_x.ice.Parser)
 			if(this.prevChar) {
 				curChar = this._nextChar();
 				com.hm_x.debug.assert("韵叠叶换".indexOf(curChar) != -1, "当前格律描述字应为\"韵叠叶换\"四字之一，实际却是\"" + curChar + "\"。");
-				if(curChar != "韵")	// “叶韵”、“叠韵”和“换韵”总是两个字，要跳过去一个
+				if(curChar != "韵" && this._peerNextChar() != '）')	// “叶韵”、“叠韵”和“换韵”常是两个字（似乎也有例外，我太阳），要跳过去一个
 					com.hm_x.debug.assert(this._nextChar() == "韵");
 				var endChar = this._nextChar();
 				com.hm_x.debug.assert(endChar == "）", "当前格律描述字应为\"）\"，实际却是\"" + endChar + "\"。");
