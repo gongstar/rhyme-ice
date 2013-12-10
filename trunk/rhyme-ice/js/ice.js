@@ -132,7 +132,7 @@ if(typeof(com.hm_x.ice.Controller) == "undefined" || !com.hm_x.ice.Controller)
 					toneName.addClassName("name");
 					if(tone.dept) {
 						var toneDept = $(toneTitle.appendChild(document.createElement("span")));
-						toneDept.appendChild(document.createTextNode(tone.origDept));
+						toneDept.appendChild(document.createTextNode(tone.desc));
 						toneDept.addClassName("descript");
 					}
 					toneTitle.addClassName("rhyme-tone-title");

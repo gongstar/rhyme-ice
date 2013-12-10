@@ -33,30 +33,6 @@ if(!com.hm_x.ice.Rhyme)
 	};
 }
 
-// 新声韵
-if(!com.hm_x.ice.NewRhyme)
-	com.hm_x.ice.NewRhyme = function() 
-{
-   this.base = com.hm_x.ice.Rhyme;
-   this.base("conf/xy.xml");
-}
-
-// 平水韵
-if(!com.hm_x.ice.PsRhyme)
-    com.hm_x.ice.PsRhyme = function()
-{
-   this.base = com.hm_x.ice.Rhyme;
-   this.base("conf/ps.xml");
-}
-
-// 词林正韵
-if(!com.hm_x.ice.ClRhyme)
-	com.hm_x.ice.ClRhyme = function()
-{
-	this.base = com.hm_x.ice.Rhyme;
-	this.base("conf/cl.xml");
-}
-
 if(!com.hm_x.ice.Rhyme.Dept)
 	com.hm_x.ice.Rhyme.Dept = function(deptNode, rhyme)
 {
@@ -66,19 +42,19 @@ if(!com.hm_x.ice.Rhyme.Dept)
 	this.name = this.node.getAttribute("部");
 	
 	this.getToneList = function() {
-		if(!this.toneList) {
-			this.toneList = [];
-			for(it = this.node.firstChild; it; it = it.nextSibling) {
-				if(it.tagName && it.tagName == '调')
-					this.toneList[this.toneList.length] = new com.hm_x.ice.Rhyme.Dept.Tone(it, this);
-			}
-		}
+		if(!this.toneList)
+			this._makeToneList();
 		return this.toneList;
 	}
-}
 
-if(!com.hm_x.ice.ClRhyme.Dept)
-	com.hm_x.ice.ClRhyme.Dept = com.hm_x.ice.Rhyme.Dept;
+	this._makeToneList = function() {
+		this.toneList = [];
+		for(it = this.node.firstChild; it; it = it.nextSibling) {
+			if(it.tagName && it.tagName == '调')
+				this.toneList[this.toneList.length] = new this.constructor.Tone(it, this);
+		}
+	}
+}
 
 if(!com.hm_x.ice.Rhyme.Dept.Tone)
 	com.hm_x.ice.Rhyme.Dept.Tone = function(toneNode, dept)
@@ -86,5 +62,72 @@ if(!com.hm_x.ice.Rhyme.Dept.Tone)
 	this.node = toneNode;
 	this.dept = dept;
 	this.name = this.node.getAttribute('名');
-	this.dept = this.node.getAttribute('部');	// 对应原广韵韵部
+	this.desc = this.node.getAttribute('部');	// 对应原广韵韵部
 }
+
+////////////////////////////////////////////////////////////
+// 新声韵
+if(!com.hm_x.ice.NewRhyme)
+	com.hm_x.ice.NewRhyme = function() 
+{
+   this.base = com.hm_x.ice.Rhyme;
+   this.base("conf/xy.xml");
+}
+
+if(!com.hm_x.ice.NewRhyme.Dept)
+	com.hm_x.ice.NewRhyme.Dept = function(deptNode, rhyme)
+{
+	this.base = com.hm_x.ice.Rhyme.Dept;
+	this.base(deptNode, rhyme);
+	
+	this._makeToneList = function() {
+		var ping = new this.constructor.Tone('平', this);
+		var zhe = new this.constructor.Tone('仄', this);
+		// var ru = new this.constructor.Tone('入', this);
+		for(it = this.node.firstChild; it; it = it.nextSibling) {
+			if(it.tagName && it.tagName == '调') {
+				var toneName = it.getAttribute('名');
+				if(toneName == '阴' || toneName == '阳')
+					ping.add(it);
+				else
+					zhe.add(it);
+			}
+		}
+		this.toneList = [ping, zhe];
+	}
+}
+
+if(!com.hm_x.ice.NewRhyme.Dept.Tone)
+	com.hm_x.ice.NewRhyme.Dept.Tone = function(toneName, dept)
+{
+	this.dept = dept;
+	this.name = toneName;
+	this.nodeList = [];
+	this.desc = '';
+	
+	this.add = function(node) {
+		this.nodeList[this.nodeList.length] = node;
+		this.desc += node.getAttribute('名');
+	}
+}
+
+////////////////////////////////////////////////////////////
+// 平水韵
+if(!com.hm_x.ice.PsRhyme)
+    com.hm_x.ice.PsRhyme = function()
+{
+   this.base = com.hm_x.ice.Rhyme;
+   this.base("conf/ps.xml");
+}
+
+////////////////////////////////////////////////////////////
+// 词林正韵
+if(!com.hm_x.ice.ClRhyme)
+	com.hm_x.ice.ClRhyme = function()
+{
+	this.base = com.hm_x.ice.Rhyme;
+	this.base("conf/cl.xml");
+}
+
+if(!com.hm_x.ice.ClRhyme.Dept)
+	com.hm_x.ice.ClRhyme.Dept = com.hm_x.ice.Rhyme.Dept;
