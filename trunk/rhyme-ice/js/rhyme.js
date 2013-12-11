@@ -27,10 +27,69 @@ if(!com.hm_x.ice.Rhyme)
 		var list = [];
 		var Dept = this.constructor.Dept;
 		nodes.each(function(it){
-			list[list.length] = new Dept(it.objectN, this);
+			// 线性表与映射表各记一份，以便检索
+			dept = new Dept(it.objectN, this);
+			list[dept.name] = dept;
+			list.push(dept);
 		});
 		this.rhymeList = list;
 	};
+	
+	this.getDept = function(deptName) {
+		return this.getDeptList()[deptName];
+	}
+	
+	this.getMultiTone = function() {
+		if(!this.multiTone)
+			this._makeMultiTone();
+		return this.multiTone;
+	}
+
+	this._makeMultiTone = function() {
+		var nodeRes = this.doc.selectNodes("/韵书/多音字");
+		com.hm_x.debug.assert(nodeRes.length == 1, '“多音字”部分应该只在韵书中只出现一次。');
+		var node = nodeRes[0].objectN;
+		this.multiTone = new com.hm_x.ice.Rhyme.MultiTone(node, this);
+	}
+	
+	this.checkZi = function(zi) {	// 返回字的音韵信息
+		var mt = this.getMultiTone();
+		var res = mt.checkZi(zi);
+		if(!res) {
+			res = this.getDeptList().detect(function(dept){
+				return dept.checkZi(zi);
+			});
+		}
+	
+		return res;
+	}
+}
+
+if(!com.hm_x.ice.Rhyme.MultiTone)
+	com.hm_x.ice.Rhyme.MultiTone = function(node, rhyme)
+{
+	this.node = node;
+	this.rhyme = rhyme;
+	
+	this.checkZi = function (zi) {
+		var xpath = "/韵书/多音字/多[@字='" + zi + "']";
+		var res = this.rhyme.doc.selectNodes(xpath);
+		com.hm_x.debug.assert(res.length < 2, "多音字表中，一个字最多出现一次。");
+		
+		if(res.length) {
+			var ziNode = res[0].objectN;
+			var toneList = [];
+			var toneText = ziNode.textContent || ziNode.text;	// ie 不支持　w3c 标准属性　textContent
+			toneText.split('，').each(function(toneDesc){
+				var tonePath = toneDesc.split('－');
+				toneList.push(this.getDept(tonePath[0]).getTone(tonePath[1]));
+			}, this.rhyme);
+			if(toneList.length)
+				return toneList;
+		}
+		
+		return null;
+	}
 }
 
 if(!com.hm_x.ice.Rhyme.Dept)
@@ -50,9 +109,20 @@ if(!com.hm_x.ice.Rhyme.Dept)
 	this._makeToneList = function() {
 		this.toneList = [];
 		for(it = this.node.firstChild; it; it = it.nextSibling) {
-			if(it.tagName && it.tagName == '调')
-				this.toneList[this.toneList.length] = new this.constructor.Tone(it, this);
+			if(it.tagName && it.tagName == '调') {
+				var newTone = new this.constructor.Tone(it, this);
+				this.toneList.push(newTone);
+				this.toneList[newTone.name] = newTone;
+			}
 		}
+	}
+
+	this.getTone = function(toneName) {
+		return this.getToneList()[toneName];
+	}
+
+	this.checkZi = function(zi) {
+		// todo
 	}
 }
 
@@ -94,6 +164,8 @@ if(!com.hm_x.ice.NewRhyme.Dept)
 			}
 		}
 		this.toneList = [ping, zhe];
+		this.toneList[ping.name] = ping;
+		this.toneList[zhe.name] = zhe;
 	}
 }
 
