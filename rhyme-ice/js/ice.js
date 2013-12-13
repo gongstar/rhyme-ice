@@ -30,12 +30,20 @@ if(typeof(com.hm_x.ice.Controller) == "undefined" || !com.hm_x.ice.Controller)
 			});
 		});
 
-		com.hm_x.ice.Editor.init();
+		//com.hm_x.ice.Editor.init();
 	},
 	
 	loadCiTag : function(ciTagSrc) {
 		this.currentCiTag = this.cpCatalog.createCiTag(ciTagSrc);
-		com.hm_x.ice.Editor.init(this.currentCiTag);
+		this.widget.titleView.setCp(this.currentCiTag);
+		this.onChangeForm(this.widget.titleView.formSelectView.getValue());
+	},
+	
+	onChangeForm : function(formIdx) {
+		this.widget.metricsView.setMetrics(this.currentCiTag.getMetricsText(formIdx));
+
+		$("cp-comment-content").innerHTML = this.currentCiTag.getComment(formIdx);
+		$("cp-summary-content").innerHTML = this.currentCiTag.getSummary(formIdx);
 	},
 	
 	onShowCpList : function(kind) {
@@ -69,9 +77,10 @@ if(typeof(com.hm_x.ice.Controller) == "undefined" || !com.hm_x.ice.Controller)
 	},
 	
 	checkMetrics : function() {
-		var peom = this.widget.editorView.htmlNode.value;
-		if(peom) {
-			var ri = this.rhyme.checkZi(peom[0]);
-		}
+		var peom = $A(this.widget.editorView.getValue());
+
+		var rhymeInfo = peom.map(function(zi){
+			return this.rhyme.checkZi(zi);
+		}, this);
 	},
 };

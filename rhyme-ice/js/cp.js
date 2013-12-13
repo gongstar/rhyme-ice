@@ -103,19 +103,37 @@ if(!com.hm_x.ice.CiTag)
 		return this._getTextByPath("/词牌/格律[" + idx + "]/格");
 	};
 	
+	this.getFormName = function(idx) {
+		if(com.hm_x.common.isIE && com.hm_x.common.ieVer < 10)
+			--idx;	// IE 10 以下版本与标准不符，从0开始计数
+			
+		var name = this._getTextByPath("/词牌/格律[" + idx + "]/@名");
+		if(name)
+			return name;
+		
+		if(!com.hm_x.common.isIE || com.hm_x.common.ieVer >= 10)
+			--idx;	// IE 10 以上版本与标准相符，从１开始计数
+		return '格' + '一二三四五六七八九十'[idx];
+	};
+	
 	this.getComment = function(idx) {
 		if(com.hm_x.common.isIE && com.hm_x.common.ieVer < 10)
 			--idx;	// IE 10 以下版本与标准不符，从0开始计数
 		return this._getTextByPath("/词牌/格律[" + idx + "]/注");
-	};
+	}
 	
 	this.getMetricsText = function(idx) {
 		if(com.hm_x.common.isIE && com.hm_x.common.ieVer < 10)
 			--idx;	// IE 10 以下版本与标准不符，从0开始计数
-		return this._getTextByPath("/词牌/格律[" + idx + "]/律");
+		return this._getTextByPath("/词牌/格律[" + idx + "]/律")
+			.replace(/平（韵）/g, '晕。').replace(/仄（韵）/g, '韵。')
+			.replace(/平（叶.?）/g, '耶。').replace(/仄（叶.?）/g, '叶。')
+			.replace(/平（叠.?）/g, '叠。').replace(/仄（叠.?）/g, '铁。')
+			.replace(/平（换.?）/g, '欢。').replace(/平（换.?）/g, '换。')
+		;
 	};
 	
-	this.getFormatCount = function() {
+	this.getFormCount = function() {
 		var res = this.dom.selectNodes("/词牌/格律");
 		return res.length;
 	};

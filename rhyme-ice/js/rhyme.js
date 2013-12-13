@@ -31,7 +31,7 @@ if(!com.hm_x.ice.Rhyme)
 			dept = new Dept(it.objectN, this);
 			list[dept.name] = dept;
 			list.push(dept);
-		});
+		}, this);
 		this.rhymeList = list;
 	};
 	
@@ -56,8 +56,9 @@ if(!com.hm_x.ice.Rhyme)
 		var mt = this.getMultiTone();
 		var res = mt.checkZi(zi);
 		if(!res) {
-			res = this.getDeptList().detect(function(dept){
-				return dept.checkZi(zi);
+			this.getDeptList().detect(function(dept){
+				res = dept.checkZi(zi);
+				return res;
 			});
 		}
 	
@@ -122,7 +123,10 @@ if(!com.hm_x.ice.Rhyme.Dept)
 	}
 
 	this.checkZi = function(zi) {
-		// todo
+		var tone = this.getToneList().detect(function(tone){
+			return tone.checkZi(zi);
+		});
+		return tone ? [tone] : null;
 	}
 }
 
@@ -133,6 +137,11 @@ if(!com.hm_x.ice.Rhyme.Dept.Tone)
 	this.dept = dept;
 	this.name = this.node.getAttribute('名');
 	this.desc = this.node.getAttribute('部');	// 对应原广韵韵部
+	
+	this.checkZi = function(zi) {
+		var text = this.node.text || this.node.textContent;
+		return text.indexOf(zi) >= 0;
+	}
 }
 
 ////////////////////////////////////////////////////////////
