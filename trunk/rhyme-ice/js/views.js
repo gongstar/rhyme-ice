@@ -13,7 +13,8 @@ if(!com.hm_x.ice.View)
 			tagName		: params.tagName || 'div',
 			id				: params.id,
 			attributes	: params.attributes,
-			innerHTML	: params.innerHTML
+			innerHTML	: params.innerHTML,
+			classNames	: params.classNames
 		};
 		if(this.onCreate)
 			this.onCreate(p);
@@ -26,6 +27,8 @@ if(!com.hm_x.ice.View)
 				node.setAttribute(it, p.attributes[it]);
 		if(p.innerHTML)
 			node.innerHTML = p.innerHTML;
+		if(p.classNames)
+			p.classNames.each(function(cn){ node.addClassName(cn); });
 
 		this.attach(node);
 	}
@@ -103,7 +106,7 @@ if(!com.hm_x.ice.View)
 	}
 
 	this.getCaption = function() {
-		capNode = this.getCaptionNode();
+		var capNode = this.getCaptionNode();
 		res = "";
 		if(capNode)
 			res = capNode.nodeValue;
@@ -111,9 +114,16 @@ if(!com.hm_x.ice.View)
 	}
 
 	this.setCaption = function(caption) {
-		capNode = this.getCaptionNode();
+		var capNode = this.getCaptionNode();
 		if(capNode)
 			capNode.nodeValue = caption;
+	}
+
+	this.getParentNode = function() {
+		if(com.hm_x.common.isIE && com.hm_x.common.ieVer < 10)
+			return this.htmlNode.parentElement;
+		else
+			return this.htmlNode.parentNode;
 	}
 
 	/////////////////////////////////////////////
@@ -201,7 +211,7 @@ if(!com.hm_x.ice.Widget)
 		this.children.push(view);
 		view.parent = this;
 		
-		if(view.htmlNode && this.htmlNode && !view.htmlNode.parentNode)
+		if(view.htmlNode && this.htmlNode && !view.getParentNode())
 			this.htmlNode.appendChild(view.htmlNode);
 			
 		return view;
@@ -261,6 +271,22 @@ if(!com.hm_x.ice.Selector)
 			this.htmlNode.appendChild(opt);
 		}
 	}
+
+	this.clear = function() {
+		com.hm_x.xml.clearChildren(this.htmlNode);
+	}
+
+	this.setValue = function(value) {
+		if(this.htmlNode)
+			this.htmlNode.value = value;
+	}
+
+	this.getValue = function() {
+		if(this.htmlNode)
+			return this.htmlNode.value;
+		else
+			return null;
+	}
 	
 	////////////////////////////////////////////////
 	// 安装事件处理器的接口
@@ -299,6 +325,44 @@ if(!com.hm_x.ice.TextArea)
 {
 	this.base = com.hm_x.ice.Widget;
 	this.base(node);
+
+	this.setValue = function(value) {
+		this.oldValue = value;	// 脚本设置不触发事件
+		if(this.htmlNode)
+			this.htmlNode.value = value;
+	}
+
+	this.getValue = function() {
+		if(this.htmlNode)
+			return this.htmlNode.value;
+		else
+			return this.oldValue;
+	}
+
+	this.setCaretPos = function(pos) {
+		if(this.htmlNode.setSelectionRange) {
+			this.htmlNode.focus();
+			this.htmlNode.setSelectionRange(pos, pos);
+		}
+		else if(this.htmlNode.createTextRange) {
+			var range = this.htmlNode.createTextRange();
+			range.move('character', pos);
+			range.select();
+		}
+	}
+
+	this.getCaretPos = function() {
+		var pos = this.htmlNode.selectionStart;
+		if(pos == null) {	// 老版IE
+			this.htmlNode.focus();
+			var sel = document.selection.createRange();
+			var sel2 = sel.duplicate();
+			
+			for(sel2.moveToElementText(this.htmlNode), pos = -1; sel2.inRange(sel); ++pos)
+				sel2.moveStart('character', 1);
+		}
+		return pos;
+	}
 	
 	////////////////////////////////////////////////
 	// 安装事件处理器的接口
@@ -315,6 +379,8 @@ if(!com.hm_x.ice.TextArea)
 	// onChange
 	
 	this.setOnAttach(function(node){
+		if(this.oldValue)
+			this.htmlNode.value = this.oldValue;
 		if(this.onChange)
 			this._installObserver();
 	});
