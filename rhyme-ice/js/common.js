@@ -17,10 +17,53 @@ if(!com.hm_x.common)
 	
 	this.isChrome	= agent.indexOf("Chrome") != -1;
 	this.isFirefox	= agent.indexOf("Firefox") != -1;
-	
-	// 全局工具方法
+
+	// 工具方法
 	/**
+		用于取极值
+		@args n1, n2, ... nn 依次列出需要比较的数，不限个数
+				functor 最后一个参数可选。它可以是一个函数，接受两个参数，返回布尔值。默认为　Math.max
+		@return 参数中最小的数
+	*/
+	this.extremum = function() {
+		if(!arguments.length)
+			return null;
+			
+		var func = arguments[arguments.length - 1];
+		if(arguments.length == 1) {
+			if(func instanceof Function)
+				return null;
+			else
+				return arguments[0];
+		}
+			 
+		var count = arguments.length;
+		if(func instanceof Function)
+			--count;
+		else
+			func = Math.max;
+		
+		var res = arguments[0];
+		var args = arguments;
+		$R(1, count, true).each(function(it){
+			res = func(res, args[it]);
+		});
+		return res;
+	}
+
+	this.max = this.extremum;
+	
+	this.min = function() {
+		var args = $A(arguments);
+		args.push(Math.min);
+		return this.extremum.apply(this, args);
+	}
+	
+	// 对象工具方法
+	/**
+		用于将数组分组
 		@args sepFunc 是一个函数，它将依次被调用，得到一个元素作为参数。应该返回一个索引值用于分组。
+		@return 按 sepFunc 返回的下标分组的数组，内含数组由原数组的元素组成
 	*/
 	Array.prototype.groupBy = function(sepFunc) {
 		var groups = [];

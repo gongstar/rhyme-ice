@@ -137,6 +137,10 @@ if(!com.hm_x.ice.Rhyme.Dept.Tone)
 	this.dept = dept;
 	this.name = this.node.getAttribute('名');
 	this.desc = this.node.getAttribute('部');	// 对应原广韵韵部
+	this.isRu = (this.name == '入');
+	this.isPing = (this.name == '平');
+	this.isStrictZhe = (this.name == '仄');
+	this.isZhe = (this.isRu || this.isStrictZhe);
 	
 	this.checkZi = function(zi) {
 		var text = this.node.text || this.node.textContent;
@@ -185,6 +189,10 @@ if(!com.hm_x.ice.NewRhyme.Dept.Tone)
 	this.name = toneName;
 	this.nodeList = [];
 	this.desc = '';
+	this.isRu = (this.name == '入');
+	this.isPing = (this.name == '平');
+	this.isStrictZhe = (this.name == '仄');
+	this.isZhe = (this.isRu || this.isStrictZhe);
 	
 	this.add = function(node) {
 		this.nodeList[this.nodeList.length] = node;
