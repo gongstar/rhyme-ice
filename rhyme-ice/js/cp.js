@@ -126,6 +126,7 @@ if(!com.hm_x.ice.CiTag)
 		if(com.hm_x.common.isIE && com.hm_x.common.ieVer < 10)
 			--idx;	// IE 10 以下版本与标准不符，从0开始计数
 		return this._getTextByPath("/词牌/格律[" + idx + "]/律")
+			.replace(/　| /g, '')										// 全、半角空格都去除
 			.replace(/平（韵）/g, '晕。').replace(/仄（韵）/g, '韵。')
 			.replace(/平（叶.?）/g, '耶。').replace(/仄（叶.?）/g, '叶。')
 			.replace(/平（叠.?）/g, '叠。').replace(/仄（叠.?）/g, '铁。')
