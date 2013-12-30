@@ -34,6 +34,7 @@ if(!com.hm_x.ice.IceWidget)
 	this.editorView = this.addChild(new com.hm_x.ice.EditorView($('content-editor')));
 	this.metricsView = this.addChild(new com.hm_x.ice.MetricsView($('format-shower')));
 	this.titleView = this.addChild(new com.hm_x.ice.TitleView($("title-editor")));
+	this.footWidget = this.addChild(new com.hm_x.ice.FootWidget($("cp-info-banners")));
 }
 
 if(!com.hm_x.ice.RhymeKindWidget)
@@ -231,7 +232,13 @@ if(!com.hm_x.ice.MetricsParaWidget)
 if(!com.hm_x.ice.MetricsGridView)
 	com.hm_x.ice.MetricsGridView = function(metricsZi)
 {
-	var metricsIdx = '平晕耶叠欢仄韵叶铁换'.indexOf(metricsZi);
+	/* 格律字表（相当于拿汉字当几千阶的编码器来用，哇哈哈哈）：
+		平曰平			平韵曰晕		平叶曰耶		平叠曰叠		平换曰欢
+		仄曰仄			仄韵曰韵		仄叶曰叶		仄叠曰铁		仄换曰换
+	*/
+	var metricsTab = '平晕耶叠欢仄韵叶铁换';
+	var metricsIdx = metricsTab.indexOf(metricsZi);
+	var metricsSep = metricsTab.indexOf('仄');		// 用作平仄的分水岭
 	
 	this.base = com.hm_x.ice.View;
 	this.base({
@@ -245,16 +252,39 @@ if(!com.hm_x.ice.MetricsGridView)
 				else
 					names.push('literal-grid');
 			}
-			else if(metricsIdx < 5)
+			else if(metricsIdx < metricsSep)
 				names.push('ping-sheng-grid');
 			else
 				names.push('zhe-sheng-grid');
 			
-			if(metricsIdx > -1 && metricsIdx != 0 && metricsIdx != 5)	// 韵字
+			if(metricsIdx > -1 && metricsIdx != 0 && metricsIdx != metricsSep)	// 韵字
 				names.push('rhyme-grid');
 			return names;
 		}))()
 	});
 	
 	this.metricsZi = metricsZi;
+}
+
+if(!com.hm_x.ice.FootWidget)
+	com.hm_x.ice.FootWidget = function(node)
+{
+	this.base = com.hm_x.ice.Widget;
+	this.base(node);
+	
+	this.sourceView = this.addChild(new com.hm_x.ice.View($("cp-source-content")));
+	this.commentView = this.addChild(new com.hm_x.ice.View($("cp-comment-content")));
+	this.summaryView = this.addChild(new com.hm_x.ice.View($("cp-summary-content")));
+	
+	this.setSource = function(source) {
+		this.sourceView.setCaption(source);
+	}
+
+	this.setComment = function(comment) {
+		this.commentView.setCaption(comment);
+	}
+
+	this.setSummary = function(summary) {
+		this.summaryView.setCaption(summary);
+	}
 }
