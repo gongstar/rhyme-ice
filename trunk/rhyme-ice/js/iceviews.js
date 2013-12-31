@@ -236,14 +236,15 @@ if(!com.hm_x.ice.MetricsGridView)
 		平曰平			平韵曰晕		平叶曰耶		平叠曰叠		平换曰欢
 		仄曰仄			仄韵曰韵		仄叶曰叶		仄叠曰铁		仄换曰换
 	*/
-	var metricsTab = '平晕耶叠欢仄韵叶铁换';
+	var metricsTab = '平晕耶叠欢仄韵叶铁换';	// 格律记录表
+	var showTab = '平韵叶叠换仄韵叶叠换';		// 格律显示表，与记录表相对应
 	var metricsIdx = metricsTab.indexOf(metricsZi);
 	var metricsSep = metricsTab.indexOf('仄');		// 用作平仄的分水岭
 	
 	this.base = com.hm_x.ice.View;
 	this.base({
 		tagName		: 'span',
-		innerHTML	: (metricsIdx < 0 ? metricsZi : '平韵叶叠换仄韵叶叠换'[metricsIdx]),
+		innerHTML	: (metricsIdx < 0 ? metricsZi : showTab[metricsIdx]),
 		classNames	: ((function(){
 			var names = ['grid'];
 			if (metricsIdx < 0) {
