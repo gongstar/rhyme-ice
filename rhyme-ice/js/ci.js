@@ -34,8 +34,12 @@ if(!com.hm_x.ice.Ci)
 			var poemPara = poemSentences.splice(0, metricsPara.length);
 			this.push(metricsPara.zip(poemPara, function(tup){
 				var mTup = tup[0], pTup = tup[1];
-				if(pTup && pTup.length && pTup.last().isPunct)	// 标点与　poem 保持一致
-					mTup[mTup.length - 1] = pTup.last();
+				if(pTup && pTup.length) {
+					mTup.reverse();
+					pTup.reverse();
+					if(pTup[0].isPunct)	// 标点与　poem 保持一致
+						mTup[0] = pTup[0];
+				}
 				return { m : mTup, p : pTup };
 			}));
 		}, this);
@@ -79,7 +83,7 @@ if(!com.hm_x.ice.Ci)
 
 		// 以下构造编辑矩阵		
 		var mtx = [];	// LD 编辑矩阵
-		mtx[-1] = $A($R(1, sent.p.length + 1)).map(function(it){ return { value : it }; });	// 利用回环特性
+		mtx[-1] = $A($R(1, sent.p.length)).map(function(it){ return { value : it }; });	// 利用回环特性
 		mtx[-1][-1] = { value : 0 };	// 起算点
 		sent.m.each(function(mZi, i){
 			mtx[i] = [];
@@ -88,7 +92,7 @@ if(!com.hm_x.ice.Ci)
 			sent.p.each(function(pZi, j){
 				var res = new com.hm_x.ice.Ci.CheckResult(mZi, pZi);
 				if(res.isMatch)
-					res.value = mtx[i - 1][j - 1];
+					res.value = mtx[i - 1][j - 1].value;
 				else
 					res.value = com.hm_x.common.min(mtx[i - 1][j].value, mtx[i][j - 1].value, mtx[i - 1][j - 1].value) + 1;
 				mtx[i][j] = res;
@@ -109,19 +113,21 @@ if(!com.hm_x.ice.Ci)
 				|| (lenDelta < 0 && mtx[i - 1][j - 1].value <= mtx[i][j - 1].value)
 			)) {
 				sent.m[i].checkResult = it;
-				nm.unshift(sent.m[i--]);
-				np.unshift(sent.p[j--]);
+				nm.push(sent.m[i--]);
+				np.push(sent.p[j--]);
 			}
 			else if((i > -1 && lenDelta > 0) || j == -1) {	// implicitly, mtx[i - 1][j - 1].value > mtx[i - 1][j].value
 				sent.m[i].checkResult = new com.hm_x.ice.Ci.CheckResult(sent.m[i], com.hm_x.ice.PoemZi.SPACE);
-				nm.unshift(sent.m[i--]);
-				np.unshift(com.hm_x.ice.PoemZi.SPACE);
+				nm.push(sent.m[i--]);
+				np.push(com.hm_x.ice.PoemZi.SPACE);
+				--lenDelta;
 			}
 			else {	// lenDelta < 0 && mtx[i - 1][j - 1].value > mtx[i][j - 1].value
 				var mSpace = new com.hm_x.ice.MetricsZi('　');
 				mSpace.checkResult = new com.hm_x.ice.Ci.CheckResult(mSpace, sent.p[j]);
-				nm.unshift(mSpace);
-				np.unshift(sent.p[j--]);
+				nm.push(mSpace);
+				np.push(sent.p[j--]);
+				++lenDelta;
 			}
 		}
 	
@@ -139,7 +145,7 @@ if(!com.hm_x.ice.Ci.CheckResult)
 {
 	if(!(this.redundantUnmatch = (mZi.zi == '　'))) {	// 与多出来的字匹配
 		if(!(this.spaceUnmatch = (pZi.zi == '　'))) {		// 空格不与任何格律匹配
-			if(!(this.punctMatch = mZi.isPunct && pZi.isPunct)) {	// 标点与标点一律匹配
+			if(!(this.punctMatch = (mZi.isPunct && pZi.isPunct))) {	// 标点与标点一律匹配
 				if(!(this.punctUnmatch = (pZi.isPunct || mZi.isPunct))) {	// 非标点与标点一律不匹配
 					if(!(this.unknownMatch = (!pZi.tones || !pZi.tones.length))) {	// 不认识的字都算通过测试，惹不起啊
 						// 目前先只做平仄测试
@@ -153,7 +159,7 @@ if(!com.hm_x.ice.Ci.CheckResult)
 							}
 							else {
 								this.zheUnmatch = mZi.isZhe;
-								this.pingUnMatch = mZi.isPing;
+								this.pingUnmatch = mZi.isPing;
 							}
 						}
 					}
