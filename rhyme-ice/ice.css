@@ -141,6 +141,7 @@
 }
 
 span.literal-grid {
+	white-space: pre;
 	color : black;
 }
 
