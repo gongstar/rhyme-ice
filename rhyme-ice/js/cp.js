@@ -130,7 +130,7 @@ if(!com.hm_x.ice.CiTag)
 			.replace(/平（韵）/g, '晕。').replace(/仄（韵）/g, '韵。')
 			.replace(/平（叶.?）/g, '耶。').replace(/仄（叶.?）/g, '叶。')
 			.replace(/平（叠.?）/g, '叠。').replace(/仄（叠.?）/g, '铁。')
-			.replace(/平（换.?）/g, '欢。').replace(/平（换.?）/g, '换。')
+			.replace(/平（换.?）/g, '欢。').replace(/仄（换.?）/g, '换。')
 		;
 	};
 	
