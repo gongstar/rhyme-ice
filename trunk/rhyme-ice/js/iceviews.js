@@ -62,33 +62,45 @@ if(!com.hm_x.ice.RhymeDeptWidget)
 	this.base(node);
 	
 	this.addDept = function(dept) {
-		var title = this.addChild(new com.hm_x.ice.View({
+		var title = this.addChild(new com.hm_x.ice.Widget({
 			tag : 'p',
-			innerHTML : dept.name
-		}));
-		title.htmlNode.addClassName("rhyme-dept-title");
+			innerHTML : dept.name,
+			classNames : ["rhyme-dept-title", "selectable-item"]
+		}));	// 没错，任何时候都只需要选择韵部。因为平仄是由词谱定的，与韵部选择无关。
+		title.dept = dept;
 			
 		var toneList = dept.getToneList();
 		if(toneList.length > 0) {
-			var toneBlock = $(title.htmlNode.appendChild(document.createElement("div")));
+			var toneBlock = title.addChild(new com.hm_x.ice.Widget(document.createElement("div")));
 			toneList.each(function(tone){
-				var toneTitle = $(toneBlock.appendChild(document.createElement("div")));
-				var toneName = $(toneTitle.appendChild(document.createElement("span")));
-				toneName.appendChild(document.createTextNode(tone.name + '声'));
-				toneName.addClassName("name");
+				var toneTitle = toneBlock.addChild(new com.hm_x.ice.Widget({
+					tagName : "div",
+					classNames : ["rhyme-tone-title"]
+				}));
+				var toneName = toneTitle.addChild(new com.hm_x.ice.View({
+					tagName : "span",
+					innerHTML : tone.name + '声',
+					classNames : ["name"]
+				}));
 				if(tone.dept) {
-					var toneDept = $(toneTitle.appendChild(document.createElement("span")));
-					toneDept.appendChild(document.createTextNode(tone.desc));
-					toneDept.addClassName("descript");
+					var toneDept = toneTitle.addChild(new com.hm_x.ice.View({
+						tagName : "span",
+						innerHTML : tone.desc,
+						classNames : ["descript"]
+					}));
 				}
-				toneTitle.addClassName("rhyme-tone-title");
-				toneTitle.addClassName("selectable-item");
-			});
-		}
-		else {	// 否则直接选择韵部即可，比如平水韵即为如此
-			title.addClassName("selectable-item");
+			}, this);
 		}
 	}
+
+	this.setOnClick(function(evt){
+		var ele = evt.element();
+		var view = (ele ? ele.hmxView : null);
+		while(view && !view.htmlNode.hasClassName("rhyme-dept-title")) // 只对韵部有响应
+			view = view.parent;
+		if(view)
+			this.getController().setCurrentRhymeDept(view.dept);
+	});
 }
 
 if(!com.hm_x.ice.CpWidget)
@@ -216,6 +228,12 @@ if(!com.hm_x.ice.MetricsView)
 			this.addChild(new com.hm_x.ice.MetricsParaWidget(mPara));
 		}, this);
 	}
+
+	this.updateMetrics = function(ci) {
+		this.children.each(function(para, idx){
+			para.updateMetrics(ci[idx]);
+		});
+	}
 }
 
 if(!com.hm_x.ice.MetricsParaWidget)
@@ -224,6 +242,29 @@ if(!com.hm_x.ice.MetricsParaWidget)
 	this.base = com.hm_x.ice.Widget;
 	this.base({	tagName	: 'p'	});
 	
+	this.updateMetrics = function(ciPara) {
+		var idx = 0;
+		ciPara.each(function(sent){ sent.m.each(function(zi){
+			var grid = this.children[idx];
+			while(grid.metricsZi != zi.zi && grid.metricsZi == '　') {
+				this.removeChild(grid);
+				grid = this.children[idx];
+			}
+			if(grid.metricsZi != zi.zi) {
+				if(zi.isPunct)
+					grid.setCaption(zi.zi);
+				else {
+					com.hm_x.debug.assert(zi.zi == '　', '多出来的格律字只能是空格！');
+					grid = this.addChild(new com.hm_x.ice.MetricsGridView(zi.zi), grid);
+				}
+			}
+				
+			grid.updateMetrics(zi);
+			++ idx;
+		}, this)}, this);
+	}
+	
+	// init
 	$A(metricsPara).each(function(zi){
 		this.addChild(new com.hm_x.ice.MetricsGridView(zi));
 	}, this);
@@ -265,6 +306,36 @@ if(!com.hm_x.ice.MetricsGridView)
 	});
 	
 	this.metricsZi = metricsZi;
+	
+	this.updateMetrics = function(zi) {
+		com.hm_x.ice.Ci.CheckResult.MATCH_CAUSE.each(function(cause){
+			this.htmlNode.removeClassName(cause);
+		}, this);
+		com.hm_x.ice.Ci.CheckResult.UNMATCH_CAUSE.each(function(cause){
+			this.htmlNode.removeClassName(cause);
+		}, this);
+		
+		if(zi.isRhyme) {
+			com.hm_x.ice.Ci.CheckResult.RHYME_MATCH_CAUSE.each(function(cause){
+				this.htmlNode.removeClassName(cause);
+			}, this);
+			com.hm_x.ice.Ci.CheckResult.RHYME_UNMATCH_CAUSE.each(function(cause){
+				this.htmlNode.removeClassName(cause);
+			}, this);
+		}
+		
+		if(zi.checkResult) {
+			if(zi.checkResult.isMatch) {
+				this.htmlNode.addClassName(zi.checkResult.matchCause);
+				if(zi.isRhyme && zi.checkResult.isRhymeMatch)
+					this.htmlNode.addClassName(zi.checkResult.rhymeMatchCause);
+				else if(zi.isRhyme && zi.checkResult.rhymeUnmatchCause)	// 当未写标点时，程序不会检查韵脚
+					this.htmlNode.addClassName(zi.checkResult.rhymeUnmatchCause);
+			}
+			else
+				this.htmlNode.addClassName(zi.checkResult.unmatchCause);
+		}
+	}
 }
 
 if(!com.hm_x.ice.FootWidget)

@@ -37,8 +37,9 @@ if(!com.hm_x.ice.Ci)
 				if(pTup && pTup.length) {
 					mTup.reverse();
 					pTup.reverse();
-					if(pTup[0].isPunct)	// 标点与　poem 保持一致
+					if(pTup[0].isPunct) {	// 标点与　poem 保持一致
 						mTup[0] = pTup[0];
+					}
 				}
 				return { m : mTup, p : pTup };
 			}));
@@ -71,8 +72,14 @@ if(!com.hm_x.ice.Ci)
 				this._editWithLDAlgo(sent);
 				
 				this.newMetricsText += sent.m.join('');
-				if(sent.p && sent.p.length)
+				if(sent.p && sent.p.length) {
 					this.newPoemText += sent.p.join('');
+					if(sent.m[sent.m.length - 2].isRhyme
+						&& sent.p.last().isPunct && sent.p.length > 1 && sent.p[sent.p.length - 2].tones
+					) {	// 对于有标点有尾字的句子，检查韵
+						this.checkRhyme(sent.m[sent.m.length - 2], sent.p[sent.p.length - 2]);
+					}
+				}
 			}, this)
 		}, this);
 	}
@@ -136,6 +143,73 @@ if(!com.hm_x.ice.Ci)
 		sent.p = np;
 	}
 
+	// 对此方法的基本保证：它会被从前到后逐句（当然，不包括无韵的句）调用
+	this.checkRhyme = function(mZi, pZi) {
+		if(!this.rhymeList) {
+			this.rhymeList = [];
+			this.currentDept = com.hm_x.ice.Controller.currentRhymeDept;
+		}
+	
+		if(mZi.checkResult.isMatch) {
+			if(mZi.zi == '叠' || mZi.zi == '铁') {
+				if(pZi.zi == this.rhymeList.last().zi)
+					mZi.checkResult.rhymeRepeatMatch = true;
+				else
+					mZi.checkResult.rhymeRepeatUnmatch = true;
+			}
+			else {
+				if(mZi.zi == '换' || mZi.zi == '欢') {
+					this.currentDept = null;
+					this.candidateDept = null;
+				}
+				
+				var matchDepts = pZi.tones.filter(function(tone){
+					if((mZi.isPing && tone.isPing) || (mZi.asZhe && tone.isZhe) || (mZi.isRu && tone.isRu)) {
+						if(this.currentDept)
+							return (tone.dept == this.currentDept);
+						else if(this.candidateDept)
+							return this.candidateDept.indexOf(tone.dept) > -1;
+						else
+							return true;
+					}
+					else
+						return false;
+				}, this).map(function(tone){ return tone.dept });	// 需要的是 dept 列表
+				
+				if(!this.currentDept && matchDepts.length > 1) {
+					mZi.checkResult.rhymeCandidateMatch = true;
+					this.candidateDept = matchDepts;
+				}
+				else if(!this.currentDept && matchDepts.length == 1) {
+					mZi.checkResult.rhymeAutoMatch = true;
+					this.currentDept = matchDepts[0];
+				}
+				else if(this.currentDept && matchDepts.length == 1)
+					mZi.checkResult.rhymeConformMatch = true;
+				else if(this.currentDept && !matchDepts.length)
+					mZi.checkResult.rhymeDisobeyUnmatch = true;
+				else if(this.candidateDept && !matchDepts.length)
+					mZi.checkResult.rhymeCandidateUnmatch = true;
+			}
+		}
+	
+		mZi.checkResult.rhymeMatchCause = com.hm_x.ice.Ci.CheckResult.RHYME_MATCH_CAUSE.detect(function(cause){
+			return mZi.checkResult[cause];
+		});
+		if(!mZi.checkResult.rhymeMatchCause) {
+			mZi.checkResult.rhymeUnmatchCause = com.hm_x.ice.Ci.CheckResult.RHYME_UNMATCH_CAUSE.detect(function(cause){
+				return mZi.checkResult[cause];
+			});
+			if(!mZi.checkResult.rhymeUnmatchCause) {
+				mZi.checkResult.rhymeUnknownUnmatch = true;
+				mZi.checkResult.rhymeUnmatchCause = 'rhymeUnknownUnmatch';
+			}
+		}
+		mZi.checkResult.isRhymeMatch = Boolean(mZi.checkResult.rhymeMatchCause);
+		
+		this.rhymeList.push(pZi);
+	}
+
 	this.init(poemText, metricsText);
 }
 com.hm_x.ice.Ci.prototype = new Array();
@@ -148,7 +222,6 @@ if(!com.hm_x.ice.Ci.CheckResult)
 			if(!(this.punctMatch = (mZi.isPunct && pZi.isPunct))) {	// 标点与标点一律匹配
 				if(!(this.punctUnmatch = (pZi.isPunct || mZi.isPunct))) {	// 非标点与标点一律不匹配
 					if(!(this.unknownMatch = (!pZi.tones || !pZi.tones.length))) {	// 不认识的字都算通过测试，惹不起啊
-						// 目前先只做平仄测试
 						if(!(this.zhongMatch = mZi.isZhong)) {
 							this.matchTone = pZi.tones.detect(function(tone){
 								return (mZi.isPing && tone.isPing) || (mZi.isZhe && tone.isZhe);
@@ -178,6 +251,8 @@ if(!com.hm_x.ice.Ci.CheckResult)
 }
 com.hm_x.ice.Ci.CheckResult.MATCH_CAUSE = ['punctMatch', 'unkownMatch', 'zhongMatch', 'zheMatch', 'pingMatch'];
 com.hm_x.ice.Ci.CheckResult.UNMATCH_CAUSE = ['redundantUnmatch', 'spaceUnmatch', 'punctUnmatch', 'zheUnmatch', 'pingUnmatch'];
+com.hm_x.ice.Ci.CheckResult.RHYME_MATCH_CAUSE = ['rhymeRepeatMatch', 'rhymeCandidateMatch', 'rhymeAutoMatch', 'rhymeConformMatch'];
+com.hm_x.ice.Ci.CheckResult.RHYME_UNMATCH_CAUSE = ['rhymeRepeatUnmatch', 'rhymeDisobeyUnmatch', 'rhymeCandidateUnmatch', 'rhymeUnknownUnmatch'];
 com.hm_x.ice.Ci.isPunct = function(zi) {
 	return ('，。；！？、'.indexOf(zi.zi ? zi.zi : zi) > -1);
 }
@@ -185,13 +260,17 @@ com.hm_x.ice.Ci.isPunct = function(zi) {
 if(!com.hm_x.ice.MetricsZi)
 	com.hm_x.ice.MetricsZi = function(zi)
 {
+	var pingIdx = '平晕耶叠欢'.indexOf(zi);
+	var zheIdx = '仄韵叶铁换'.indexOf(zi);
+	
 	this.zi = zi;
 	this.isPunct = com.hm_x.ice.Ci.isPunct(zi);
-	this.isPing = ('平晕耶叠欢'.indexOf(this.zi) >= 0);
-	this.isZhe = ('仄韵叶铁换'.indexOf(this.zi) >= 0);
-	this.isZhong = (this.zi == '中');
+	this.isPing = (pingIdx > -1);
+	this.isZhe = (zheIdx > -1);
+	this.isZhong = (zi == '中');
 	this.asPing = (this.isPing || this.isZhong);
 	this.asZhe = (this.isZhe || this.isZhong);
+	this.isRhyme = (pingIdx > 0 || zheIdx > 0);
 	
 	this.toString = function() {
 		return this.zi;
