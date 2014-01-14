@@ -79,6 +79,12 @@ if(typeof(com.hm_x.ice.Controller) == "undefined" || !com.hm_x.ice.Controller)
 		});
 	},
 	
+	setCurrentRhymeDept : function(dept) {
+		this.widget.rhymeDeptWidget.hide();
+		this.widget.rhymeDeptButton.setCaption(dept.name);
+		this.currentRhymeDept = dept;
+	},
+	
 	checkMetrics : function() {
 		if(!this.currentCiTag)
 			return;	// todo: 将来可以考虑自动查找符合的词牌。还没想过，预计需要在词牌列表中加入大量元信息……
@@ -91,11 +97,11 @@ if(typeof(com.hm_x.ice.Controller) == "undefined" || !com.hm_x.ice.Controller)
 		
 		var newMetricsText = ci.getNewMetricsText();
 		var newPoemText = ci.getNewPoemText();
+		this.widget.metricsView.updateMetrics(ci);
+
 		if(!newPoemText)
 			return;	// poem　无内容，则不必进行下面的调整
 		
-		this.widget.metricsView.setMetrics(newMetricsText);
-
 		// 计算原编辑位置
 		var caretPos = this.widget.editorView.getCaretPos();
 		var caretDelta = 0;

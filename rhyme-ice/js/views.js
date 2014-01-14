@@ -207,14 +207,36 @@ if(!com.hm_x.ice.Widget)
 	this.base(node);
 	this.children = [];
 	
-	this.addChild = function(view) {
-		this.children.push(view);
+	this.addChild = function(view, beforeChild) {
+		if(beforeChild) {
+			var idx = beforeChild;
+			if(typeof(beforeChild) != 'number')
+				idx = this.children.indexOf(beforeChild);
+			this.children.splice(idx, 0, view);
+			
+			if(view.htmlNode && this.htmlNode && !view.getParentNode()) {
+				var ref = beforeChild;
+				if(typeof(beforeChild) == 'number')
+					ref = this.htmlNode.childNodes.item(beforeChild);
+				this.htmlNode.insertBefore(view.htmlNode, ref);
+			}
+		}
+		else {
+			this.children.push(view);
+			if(view.htmlNode && this.htmlNode && !view.getParentNode())
+				this.htmlNode.appendChild(view.htmlNode);
+		}
 		view.parent = this;
-		
-		if(view.htmlNode && this.htmlNode && !view.getParentNode())
-			this.htmlNode.appendChild(view.htmlNode);
 			
 		return view;
+	}
+
+	this.removeChild = function(view) {
+		var idx = view;
+		if(typeof(view) != 'number')
+			idx = this.children.indexOf(view);
+		if(idx > -1)
+			this.children.splice(idx, 1);
 	}
 
 	this.clear = function() {
