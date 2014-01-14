@@ -249,7 +249,7 @@ if(!com.hm_x.ice.Ci.CheckResult)
 	}, this);
 	this.isMatch = !this.unmatchCause;
 }
-com.hm_x.ice.Ci.CheckResult.MATCH_CAUSE = ['punctMatch', 'unkownMatch', 'zhongMatch', 'zheMatch', 'pingMatch'];
+com.hm_x.ice.Ci.CheckResult.MATCH_CAUSE = ['punctMatch', 'unknownMatch', 'zhongMatch', 'zheMatch', 'pingMatch'];
 com.hm_x.ice.Ci.CheckResult.UNMATCH_CAUSE = ['redundantUnmatch', 'spaceUnmatch', 'punctUnmatch', 'zheUnmatch', 'pingUnmatch'];
 com.hm_x.ice.Ci.CheckResult.RHYME_MATCH_CAUSE = ['rhymeRepeatMatch', 'rhymeCandidateMatch', 'rhymeAutoMatch', 'rhymeConformMatch'];
 com.hm_x.ice.Ci.CheckResult.RHYME_UNMATCH_CAUSE = ['rhymeRepeatUnmatch', 'rhymeDisobeyUnmatch', 'rhymeCandidateUnmatch', 'rhymeUnknownUnmatch'];
