@@ -109,7 +109,7 @@ if(typeof(com.hm_x.ice.Controller) == "undefined" || !com.hm_x.ice.Controller)
 		$A(this.widget.editorView.getValue()).detect(function(zi){
 			if(caretCount >= caretPos)
 				return true;
-			if(zi == '　')
+			if(zi == '　' || zi == '\n')
 				++ caretDelta;
 			++ caretCount;
 			return false;
@@ -122,7 +122,7 @@ if(typeof(com.hm_x.ice.Controller) == "undefined" || !com.hm_x.ice.Controller)
 		$A(newPoemText).detect(function(zi){
 			if(caretCount >= caretPos)
 				return true;
-			if(zi == '　')
+			if(zi == '　' || zi == '\n')
 				++ caretDelta;
 			else
 				++ caretCount;
