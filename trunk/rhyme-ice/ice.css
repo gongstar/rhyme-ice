@@ -107,7 +107,7 @@
 	margin-bottom : 0px;
 	padding : 0px;
 	border : 1px solid #BBCCDD;
-	font-family: 楷体;
+	font-family: "楷体";
 	font-size : 24px;
 	line-height : 28px; 
 }
@@ -121,30 +121,41 @@
 	margin : 0px;
 }
 
-.grid {
-	color : #D2D2D2;
+span.grid {
+	/* color : #DDDDDD; */
 }
 
-.rhyme-grid {
-	border : solid 1px red;
-	letter-spacing: -1px;
-}
-
-.ping-sheng-grid {
+span.ping-sheng-grid {
 	background-color : #DDDDFF;
+	color : #EAEAF2;
 }
 
-.zhe-sheng-grid {
-	background-color : #FFDDDD;
+span.zhe-sheng-grid {
+	background-color : #FFEEEE;
+	color : #DDDDDD;
 }
 
-.zhong-sheng-grid {
-	background-color : #DDFFDD;
+span.zhong-sheng-grid {
+	background-color : #EEEEEE;
+	color : #DDDDDD;
 }
 
 span.literal-grid {
 	white-space: pre;
 	color : black;
+}
+
+span.rhyme-grid {
+	background-image: url("img/rhyme-flag.png");
+	background-position: bottom center;
+	background-repeat: no-repeat;
+	/* letter-spacing: -1px; */
+}
+
+span.redundantUnmatch span.spaceUnmatch span.punctUnmatch span.zheUnmatch span.pingUnmatch {
+	background-image: url("img/error-flag.png");
+	background-position: right bottom;
+	background-repeat: no-repeat;
 }
 
 #cp-info-banners {
