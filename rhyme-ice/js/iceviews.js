@@ -245,20 +245,25 @@ if(!com.hm_x.ice.MetricsParaWidget)
 	this.updateMetrics = function(ciPara) {
 		var idx = 0;
 		ciPara.each(function(sent){ sent.m.each(function(zi){
-			var grid = this.children[idx];
-			while(grid.metricsZi != zi.zi && grid.metricsZi == '　') {
-				this.removeChild(grid);
+			var grid;
+			if(idx >= this.children.length)
+				grid = this.addChild(new com.hm_x.ice.MetricsGridView(zi.zi));
+			else {
 				grid = this.children[idx];
-			}
-			if(grid.metricsZi != zi.zi) {
-				if(zi.isPunct)
-					grid.setCaption(zi.zi);
-				else {
-					com.hm_x.debug.assert(zi.zi == '　', '多出来的格律字只能是空格！');
-					grid = this.addChild(new com.hm_x.ice.MetricsGridView(zi.zi), grid);
+				while(grid.metricsZi != zi.zi && grid.metricsZi == '　') {
+					this.removeChild(grid);
+					grid = this.children[idx];
+				}
+				if(grid.metricsZi != zi.zi) {
+					if(zi.isPunct)
+						grid.setCaption(zi.zi);
+					else {
+						com.hm_x.debug.assert(zi.zi == '　', '多出来的格律字只能是空格！');
+						grid = this.addChild(new com.hm_x.ice.MetricsGridView(zi.zi), grid);
+					}
 				}
 			}
-				
+			
 			grid.updateMetrics(zi);
 			++ idx;
 		}, this)}, this);

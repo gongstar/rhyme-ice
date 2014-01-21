@@ -218,7 +218,7 @@ if(!com.hm_x.ice.Widget)
 				var ref = beforeChild;
 				if(typeof(beforeChild) == 'number')
 					ref = this.htmlNode.childNodes.item(beforeChild);
-				this.htmlNode.insertBefore(view.htmlNode, ref);
+				this.htmlNode.insertBefore(view.htmlNode, ref.htmlNode);
 			}
 		}
 		else {
@@ -237,6 +237,8 @@ if(!com.hm_x.ice.Widget)
 			idx = this.children.indexOf(view);
 		if(idx > -1)
 			this.children.splice(idx, 1);
+		
+		this.htmlNode.removeChild(view.htmlNode);
 	}
 
 	this.clear = function() {

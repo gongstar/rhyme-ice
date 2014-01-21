@@ -121,40 +121,54 @@
 	margin : 0px;
 }
 
-span.grid {
+.grid {
 	/* color : #DDDDDD; */
 }
 
-span.ping-sheng-grid {
+.ping-sheng-grid {
 	background-color : #DDDDFF;
 	color : #EAEAF2;
 }
 
-span.zhe-sheng-grid {
+.zhe-sheng-grid {
 	background-color : #FFEEEE;
 	color : #DDDDDD;
 }
 
-span.zhong-sheng-grid {
+.zhong-sheng-grid {
 	background-color : #EEEEEE;
 	color : #DDDDDD;
 }
 
-span.literal-grid {
+.literal-grid {
 	white-space: pre;
-	color : black;
+	color : gray;
 }
 
-span.rhyme-grid {
+.rhyme-grid {
 	background-image: url("img/rhyme-flag.png");
 	background-position: bottom center;
 	background-repeat: no-repeat;
 	/* letter-spacing: -1px; */
 }
 
-span.redundantUnmatch span.spaceUnmatch span.punctUnmatch span.zheUnmatch span.pingUnmatch {
+.redundantUnmatch, .spaceUnmatch, .punctUnmatch, .zheUnmatch, .pingUnmatch {
 	background-image: url("img/error-flag.png");
 	background-position: right bottom;
+	background-repeat: no-repeat;
+}
+
+.redundantUnmatch.rhyme-grid,
+.spaceUnmatch.rhyme-grid,
+.punctUnmatch.rhyme-grid,
+.zheUnmatch.rhyme-grid,
+.pingUnmatch.rhyme-grid,
+.rhymeRepeatUnmatch.rhyme-grid,
+.rhymeDisobeyUnmatch.rhyme-grid,
+.rhymeCandidateUnmatch.rhyme-grid,
+.rhymeUnknownUnmatch.rhyme-grid {
+	background-image: url("img/rhyme-error-flag.png");
+	background-position : bottom right;
 	background-repeat: no-repeat;
 }
 
