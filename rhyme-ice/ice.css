@@ -92,8 +92,9 @@
 	overflow : hidden;
 	font-family: 楷体;
 	font-size : 24px;
-	line-height : 28px; 
+	line-height : 32px; 
 	letter-spacing: 0px;
+	padding:0px;
 }
 
 #format-shower {
@@ -109,7 +110,7 @@
 	border : 1px solid #BBCCDD;
 	font-family: "楷体";
 	font-size : 24px;
-	line-height : 28px; 
+	padding : 1px;
 }
 
 #format-shower p {
@@ -122,27 +123,27 @@
 }
 
 .grid {
-	/* color : #DDDDDD; */
+	color : #FFFFFF;
+	letter-spacing: 0px;
+	line-height : 32px;
 }
 
 .ping-sheng-grid {
-	background-color : #DDDDFF;
-	color : #EAEAF2;
+	background-color : #B0C0FF;
 }
 
 .zhe-sheng-grid {
-	background-color : #FFEEEE;
-	color : #DDDDDD;
+	background-color : #EEC8B8;
 }
 
 .zhong-sheng-grid {
-	background-color : #EEEEEE;
-	color : #DDDDDD;
+	background-color : #E0E0E0;
 }
 
 .literal-grid {
 	white-space: pre;
 	color : gray;
+	border-color : white;
 }
 
 .rhyme-grid {
@@ -170,6 +171,25 @@
 	background-image: url("img/rhyme-error-flag.png");
 	background-position : bottom right;
 	background-repeat: no-repeat;
+}
+
+.punctMatch.grid {
+	color : white;
+}
+
+.unknownMatch.grid {
+}
+
+.zhongMatch.grid {
+	color : #E0E0E0;
+}
+
+.zheMatch.grid {
+	color : #EEC8B8;
+}
+
+.pingMatch.grid {
+	color : #B0C0FF;
 }
 
 #cp-info-banners {
