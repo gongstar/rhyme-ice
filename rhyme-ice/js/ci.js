@@ -38,12 +38,22 @@ if(!com.hm_x.ice.Ci)
 					mTup.reverse();
 					pTup.reverse();
 					if(pTup[0].isPunct) {	// 标点与　poem 保持一致
-						mTup[0] = pTup[0];
+						mTup[0].zi = pTup[0].zi;
 					}
 				}
 				return { m : mTup, p : pTup };
 			}));
 		}, this);
+		
+		if(poemSentences.length > 0) {	// 居然有多余的句子，比谱还长，这不科学……但是，“摆谱”也是允许滴嘛
+			poemSentences.each(function(sent){
+				this.last().push({m:[], p:[]});
+				sent.each(function(zi){
+					this.last().last().m.unshift(new com.hm_x.ice.MetricsZi(zi.isPunct ? zi.zi : '　'));
+					this.last().last().p.unshift(zi);
+				}, this);
+			}, this);
+		}
 	};
 
 	this.getNewMetricsText = function() {
@@ -74,7 +84,7 @@ if(!com.hm_x.ice.Ci)
 				this.newMetricsText += sent.m.join('');
 				if(sent.p && sent.p.length) {
 					this.newPoemText += sent.p.join('');
-					if(sent.m[sent.m.length - 2].isRhyme
+					if(sent.m.length > 1 && sent.m[sent.m.length - 2].isRhyme
 						&& sent.p.last().isPunct && sent.p.length > 1 && sent.p[sent.p.length - 2].tones
 					) {	// 对于有标点有尾字的句子，检查韵
 						this.checkRhyme(sent.m[sent.m.length - 2], sent.p[sent.p.length - 2]);
