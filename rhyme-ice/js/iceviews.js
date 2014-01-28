@@ -35,6 +35,7 @@ if(!com.hm_x.ice.IceWidget)
 	this.metricsView = this.addChild(new com.hm_x.ice.MetricsView($('format-shower')));
 	this.titleView = this.addChild(new com.hm_x.ice.TitleView($("title-editor")));
 	this.footWidget = this.addChild(new com.hm_x.ice.FootWidget($("cp-info-banners")));
+	this.causePanel = this.addChild(new com.hm_x.ice.Widget($("cause-panel")));
 }
 
 if(!com.hm_x.ice.RhymeKindWidget)
@@ -167,7 +168,7 @@ if(!com.hm_x.ice.TitleView)
 	this.cpNameView = this.addChild(new com.hm_x.ice.View($('cp-name')));
 	this.cpNameEditorView = this.addChild(new com.hm_x.ice.View($('title-editor-cp-name')));
 	// 这里应该是一个点击后变为　input editor 的编辑控件，todo...
-	this.ciTitleView = this.addChild(new com.hm_x.ice.Clickable($('title-editor-title')));
+	this.ciTitleView = this.addChild(new com.hm_x.ice.ClickableView($('title-editor-title')));
 	this.formSelectView = this.addChild(new com.hm_x.ice.MetricsFormSelector($("format-selector")));
 }
 
@@ -231,7 +232,8 @@ if(!com.hm_x.ice.MetricsView)
 
 	this.updateMetrics = function(ci) {
 		this.children.each(function(para, idx){
-			para.updateMetrics(ci[idx]);
+			if(para instanceof com.hm_x.ice.MetricsParaWidget)
+				para.updateMetrics(ci[idx]);
 		});
 	}
 }
@@ -264,7 +266,7 @@ if(!com.hm_x.ice.MetricsParaWidget)
 				}
 			}
 			
-			grid.updateMetrics(zi);
+			grid.updateMetrics(zi, (sent.p && sent.p.length > idx ? sent.p[idx] : null));
 			++ idx;
 		}, this)}, this);
 	}
@@ -312,7 +314,7 @@ if(!com.hm_x.ice.MetricsGridView)
 	
 	this.metricsZi = metricsZi;
 	
-	this.updateMetrics = function(zi) {
+	this.updateMetrics = function(zi, pZi) {
 		com.hm_x.ice.Ci.CheckResult.MATCH_CAUSE.each(function(cause){
 			this.htmlNode.removeClassName(cause);
 		}, this);
@@ -340,8 +342,73 @@ if(!com.hm_x.ice.MetricsGridView)
 			else
 				this.htmlNode.addClassName(zi.checkResult.unmatchCause);
 		}
+		
+		if(this.causeView) {
+			this.causeView.destroy();
+			this.causeView = null;
+		}
+		if(zi.checkResult && !zi.checkResult.isMatch)
+			this.causeView = $("cause-panel").hmxView.addChild(new com.hm_x.ice.CauseWidget(this, pZi));
 	}
+
+	this.setOnDestroy(function(){
+		if(this.causeView) {
+			$("cause-panel").hmxView.removeChild(this.causeView);
+			delete this.causeView;
+		}
+	});
 }
+
+if(!com.hm_x.ice.CauseWidget)
+	com.hm_x.ice.CauseWidget = function(grid, pZi)
+{
+	this.base = com.hm_x.ice.Widget;
+	this.base(
+		{
+			tagName : 'div',
+			classNames : ['cause-grid'],
+		},
+		function(evt) {	// onClick
+			this.expand(this.expanded);
+		}
+	);
+	this.base2 = com.hm_x.ice.CursorDiscernible;
+	this.base2(
+		function(evt) {	// onMouseEnter
+			if(!this.expanded)
+				this.mouseTimer = window.setTimeout(
+					this.expand.bindAsEventListener(this), com.hm_x.ice.CauseWidget.EXPAND_TIMEOUT
+				);
+		},
+		function(evt) {	// onMouseLeave
+			if(this.expanded)
+				this.expand(this.expanded);
+			else {
+				window.clearTimeout(this.mouseTimer);
+				delete this.mouseTimer;
+			}
+		}
+	);
+	
+	this.expand = function(collapseFlag) {	// collapseFlag 指定是否执行收缩
+		this.htmlNode.style.backgroundColor = (collapseFlag ? 'transparent' : 'red');
+		this.expanded = !this.expanded;
+	}
+	
+	this.grid = grid;
+	this.poemZi = pZi;
+	
+	// 不知为何，prototype 计算的 bottom 和 right 值并不正确
+	var relPos = grid.htmlNode.getLayout();
+	var left = relPos.get('left') + relPos.get('width') - 12;	// 错误红三角宽12像素
+	var top = relPos.get('top') + relPos.get('height') - 12;	// 错误红三角高12像素
+	this.htmlNode.style.left = '' + left + 'px';
+	this.htmlNode.style.top = '' + top + 'px';
+	//this.htmlNode.style.backgroundColor = 'black';
+}
+com.hm_x.ice.CauseWidget.MAX_WIDTH = 300;
+com.hm_x.ice.CauseWidget.MAX_HEIGHT = 250;
+com.hm_x.ice.CauseWidget.EXPAND_TIMEOUT = 1500;
 
 if(!com.hm_x.ice.FootWidget)
 	com.hm_x.ice.FootWidget = function(node)
