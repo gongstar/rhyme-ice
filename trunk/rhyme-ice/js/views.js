@@ -34,12 +34,14 @@ if(!com.hm_x.ice.View)
 	}
 	
 	this.destroy = function() {
-		node = this.htmlNode;
+		var node = this.htmlNode;
 		this.detach();
 		if(this.onDestroy)
-			this.onDestroy();
+			this.onDestroy(node);
 		if(node.parentNode)
 			node.parentNode.removeChild(node);
+		if(this.onDestroy)
+			this.onDestroy(node);
 	}
 	
 	this.attach = function(node) {
@@ -61,7 +63,6 @@ if(!com.hm_x.ice.View)
 			this.htmlNode = null;
 		}
 	}
-
 
 	this.show = function() {
 		if(this.htmlNode)
@@ -128,22 +129,83 @@ if(!com.hm_x.ice.View)
 
 	/////////////////////////////////////////////
 	// 安装事件处理器
+	
+	// 通用 html 事件响应
+	// eventName 要求：每个单词大写开头，不含 on。如： MouseMove、Click
+	this.setEventHandler = function(eventName, handler) {
+		var hdlName = 'on' + eventName;
+		var hdlEntry = 'on' + hdlName + 'Handler';
+		if(!(hdlName in this)) {
+			this[hdlName] = [handler];
+			this[hdlEntry] = (function(evt) {
+				this[hdlName].each(function(hdl){
+					hdl.call(this, evt);
+				}, this);
+			}).bindAsEventListener(this);
+			this.setOnAttach(function(){
+				this.setOnDetach(function(evt){
+					Event.stopObserving(this.htmlNode, eventName.toLowerCase());
+				});
+				Event.observe(this.htmlNode, eventName.toLowerCase(), this[hdlEntry]);
+			});
+		}
+		else
+			this[hdlName].unshift(handler);
+	}
+	
 	this.setOnCreate = function(onCreate) {
-		this.onCreate = onCreate;
+		if(!this.createHooks) {
+			this.onCreate = function(param) {
+				this.createHooks.each(function(hook){
+					hook.call(this, param);
+				}, this);
+			}
+			this.createHooks = [onCreate];
+		}
+		else
+			this.createHooks.unshift(onCreate);
 	}
 
 	this.setOnAttach = function(onAttach) {
-		this.onAttach = onAttach;
+		if(!this.attachHooks) {
+			this.onAttach = function(node) {
+				this.attachHooks.each(function(hook){
+					hook.call(this, node);
+				}, this);
+			}
+			this.attachHooks = [onAttach];
+		}
+		else
+			this.attachHooks.unshift(onAttach);
+		
 		if(this.htmlNode)
 			this.onAttach(this.htmlNode);
 	}
 
 	this.setOnDetach = function(onDetach) {
-		this.onDetach = onDetach;
+		if(!this.detachHooks) {
+			this.onDetach = function(node) {
+				this.detachHooks.each(function(hook){
+					hook.call(this, node);
+				}, this)
+			}
+			this.detachHooks = [onDetach];
+		}
+		else
+			this.detachHooks.unshift(onDetach);
 	}
 
 	this.setOnDestroy = function(onDestroy) {
-		this.onDestroy = onDestroy;
+		if(!this.destroyHooks) {
+			this.onDestroy = function(node) {
+				this.destroyHooks.each(function(hook){
+					hook.call(this, node);
+				}, this);
+			}
+			this.destroyHooks = [onDestroy];
+		}
+		else
+			this.destroyHooks.unshift(onDestroy);
 	}
 
 
@@ -164,19 +226,10 @@ if(!com.hm_x.ice.View)
 }
 
 if(!com.hm_x.ice.Clickable)
-	com.hm_x.ice.Clickable = function(node, onClick)
+	com.hm_x.ice.Clickable = function(onClick)
 {
-	this.base = com.hm_x.ice.View;
-	this.base(node);
-	
 	this.setOnClick = function(onClick) {
-		if(this.onClick && this.htmlNode)
-			Event.stopObserving(this.htmlNode, 'click');
-			
-		this.onClick = onClick;
-		
-		if(this.onClick && this.htmlNode)
-			Event.observe(this.htmlNode, 'click', this.onClick.bindAsEventListener(this));
+		this.setEventHandler('Click', onClick);
 	}
 
 	/////////////////////////////////////////////
@@ -186,24 +239,42 @@ if(!com.hm_x.ice.Clickable)
 	// onLeave(node)
 
 	// initializing
-	this.setOnAttach(function(node) {
-		if(this.onClick)
-			Event.observe(this.htmlNode, 'click', this.onClick.bindAsEventListener(this));
-	});
-
-	this.setOnDetach(function(node) {
-		if(this.onClick)
-			Event.stopObserving(this.htmlNode, 'click');
-	});
-	
 	if(onClick)
 		this.setOnClick(onClick);
+}
+
+com.hm_x.ice.ClickableView = function(node, onClick) {
+	this.base = com.hm_x.ice.View;
+	this.base(node);
+	this.base2 = com.hm_x.ice.Clickable;
+	this.base2(onClick);
+}
+
+com.hm_x.ice.CursorDiscernible = function(onEnter, onLeave, onMove) {
+	this.setOnMouseEnter = function(onEnter) {
+		this.setEventHandler('MouseEnter', onEnter);
+	}
+	
+	this.setOnMouseLeave = function(onLeave) {
+		this.setEventHandler('MouseLeave', onLeave);
+	}
+	
+	this.setOnMouseMove = function(onMove) {
+		this.setEventHandler('MouseMove', onMove);
+	}
+	
+	if(onEnter)
+		this.setOnMouseEnter(onEnter);
+	if(onLeave)
+		this.setOnMouseLeave(onLeave);
+	if(onMove)
+		this.setOnMouseMove(onMove);
 }
 
 if(!com.hm_x.ice.Widget)
 	com.hm_x.ice.Widget = function(node)
 {
-	this.base = com.hm_x.ice.Clickable;
+	this.base = com.hm_x.ice.ClickableView;
 	this.base(node);
 	this.children = [];
 	
@@ -233,12 +304,15 @@ if(!com.hm_x.ice.Widget)
 
 	this.removeChild = function(view) {
 		var idx = view;
+		var v = view;
 		if(typeof(view) != 'number')
-			idx = this.children.indexOf(view);
+			idx = this.children.indexOf(v);
+		else
+			v = this.children[idx];
 		if(idx > -1)
 			this.children.splice(idx, 1);
 		
-		this.htmlNode.removeChild(view.htmlNode);
+		v.destroy();
 	}
 
 	this.clear = function() {
@@ -252,22 +326,13 @@ if(!com.hm_x.ice.Widget)
 		// 	com.hm_x.xml.clearChildren(this.htmlNode);
 	}
 
-	this.destroy = function() {
-		this.clear();
-
-		node = this.htmlNode;
-		this.detach();
-		if(this.onDestroy)
-			this.onDestroy();
-		if(node.parentNode)
-			node.parentNode.removeChild(node);
-	}
+	this.setOnDestroy(this.clear);
 }
 
 if(!com.hm_x.ice.Button)
 	com.hm_x.ice.Button = function(node, onClick)
 {
-	this.base = com.hm_x.ice.Clickable;
+	this.base = com.hm_x.ice.ClickableView;
 	this.base(node, onClick);
 }
 
