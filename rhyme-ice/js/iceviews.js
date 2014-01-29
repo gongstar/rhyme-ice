@@ -246,7 +246,7 @@ if(!com.hm_x.ice.MetricsParaWidget)
 	
 	this.updateMetrics = function(ciPara) {
 		var idx = 0;
-		ciPara.each(function(sent){ sent.m.each(function(zi){
+		ciPara.each(function(sent){ sent.m.each(function(zi, ziIdx){
 			var grid;
 			if(idx >= this.children.length)
 				grid = this.addChild(new com.hm_x.ice.MetricsGridView(zi.zi));
@@ -266,7 +266,7 @@ if(!com.hm_x.ice.MetricsParaWidget)
 				}
 			}
 			
-			grid.updateMetrics(zi, (sent.p && sent.p.length > idx ? sent.p[idx] : null));
+			grid.updateMetrics(zi, ((sent.p && sent.p.length > ziIdx) ? sent.p[ziIdx] : null));
 			++ idx;
 		}, this)}, this);
 	}
@@ -315,6 +315,7 @@ if(!com.hm_x.ice.MetricsGridView)
 	this.metricsZi = metricsZi;
 	
 	this.updateMetrics = function(zi, pZi) {
+		this.zi = zi;
 		com.hm_x.ice.Ci.CheckResult.MATCH_CAUSE.each(function(cause){
 			this.htmlNode.removeClassName(cause);
 		}, this);
@@ -347,7 +348,7 @@ if(!com.hm_x.ice.MetricsGridView)
 			this.causeView.destroy();
 			this.causeView = null;
 		}
-		if(zi.checkResult && !zi.checkResult.isMatch)
+		if(zi.checkResult && (!zi.checkResult.isMatch || (zi.isRhyme && !zi.checkResult.isRhymeMatch)))
 			this.causeView = $("cause-panel").hmxView.addChild(new com.hm_x.ice.CauseWidget(this, pZi));
 	}
 
@@ -369,10 +370,12 @@ if(!com.hm_x.ice.CauseWidget)
 			classNames : ['cause-grid'],
 		},
 		function(evt) {	// onClick
+			if(this.mouseTimer)
+				window.clearTimeout(this.mouseTimer);
 			this.expand(this.expanded);
 		}
 	);
-	this.base2 = com.hm_x.ice.CursorDiscernible;
+/*	this.base2 = com.hm_x.ice.CursorDiscernible;
 	this.base2(
 		function(evt) {	// onMouseEnter
 			if(!this.expanded)
@@ -383,15 +386,23 @@ if(!com.hm_x.ice.CauseWidget)
 		function(evt) {	// onMouseLeave
 			if(this.expanded)
 				this.expand(this.expanded);
-			else {
+			else if(this.mouseTimer){
 				window.clearTimeout(this.mouseTimer);
 				delete this.mouseTimer;
 			}
 		}
-	);
+	);	//*/
 	
 	this.expand = function(collapseFlag) {	// collapseFlag 指定是否执行收缩
-		this.htmlNode.style.backgroundColor = (collapseFlag ? 'transparent' : 'red');
+		if(collapseFlag) {	// 收缩
+			this.htmlNode.removeClassName('expanded');
+			this.contentView.hide();
+		}
+		else {	// 展开
+			this.htmlNode.addClassName('expanded');
+			this.contentView.show();
+		}
+		
 		this.expanded = !this.expanded;
 	}
 	
@@ -405,10 +416,56 @@ if(!com.hm_x.ice.CauseWidget)
 	this.htmlNode.style.left = '' + left + 'px';
 	this.htmlNode.style.top = '' + top + 'px';
 	//this.htmlNode.style.backgroundColor = 'black';
+	
+	this.contentView = this.addChild(new com.hm_x.ice.View({
+		tagName : 'table',
+		innerHTML : '<tr class="top-decoration-row">'
+			+ 		'<td class="left-top-placeholder"></td><td class="decoration-border">'
+			+ '</td></tr>'
+			+ '<tr><td colspan="2" class="content-block"><table>'
+			+ 		'<tr><td class="title">错误原因</td><td class="text PH-cause"></td></tr>'
+			+		'<tr><td class="title">此字音韵</td><td class="text"><ul class="PH-rhyme"></ul></td></tr>'
+			+ '</table></td></tr'
+		,
+		classNames : ['cause-content']
+	}));
+	this.contentView.hide();
+	
+	var tmpList = this.contentView.htmlNode.select('.PH-cause');
+	com.hm_x.debug.assert(tmpList.length == 1, 'CauseGrid 中应该有且只有一个 PH-cause 域');
+	this.causeView = new com.hm_x.ice.View(tmpList[0]);
+	var unmatchCause = 
+		com.hm_x.ice.CauseWidget.UNMATCH_CAUSE[grid.zi.checkResult.unmatchCause]
+		|| com.hm_x.ice.CauseWidget.UNMATCH_CAUSE[grid.zi.checkResult.rhymeUnmatchCause]
+	;
+	this.causeView.setCaption(unmatchCause);
+	
+	tmpList = this.contentView.htmlNode.select('.PH-rhyme');
+	com.hm_x.debug.assert(tmpList.length == 1, 'CauseGrid 中应该有且只有一个 PH-rhyme 域');
+	this.rhymeView = new com.hm_x.ice.Widget(tmpList[0]);
+	if(pZi && pZi.tones) {
+		pZi.tones.each(function(tone){
+			this.rhymeView.addChild(new com.hm_x.ice.View({
+				tagName : 'li',
+				innerHTML : tone.dept.name + ' - ' + tone.name + (tone.desc ? '（' + tone.desc + '）' : ''),
+			}));
+		}, this);
+	}
 }
 com.hm_x.ice.CauseWidget.MAX_WIDTH = 300;
 com.hm_x.ice.CauseWidget.MAX_HEIGHT = 250;
 com.hm_x.ice.CauseWidget.EXPAND_TIMEOUT = 1500;
+com.hm_x.ice.CauseWidget.UNMATCH_CAUSE = {
+	redundantUnmatch		: '多余的字',
+	spaceUnmatch			: '有待填写',
+	punctUnmatch			: '这里需要标点',
+	zheUnmatch				: '应仄而平',
+	pingUnmatch				: '应平而仄（入）',
+	rhymeRepeatUnmatch	: '须叠用前韵',
+	rhymeDisobeyUnmatch	: '出韵',
+	rhymeCandidateUnmatch: '出韵',
+	rhymeUnknownUnmatch	: '未知原因'
+};
 
 if(!com.hm_x.ice.FootWidget)
 	com.hm_x.ice.FootWidget = function(node)
