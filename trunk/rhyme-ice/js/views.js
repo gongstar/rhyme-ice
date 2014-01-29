@@ -90,13 +90,9 @@ if(!com.hm_x.ice.View)
 
 	this.getCaptionNode = function() {
 		if(!this.captionNode && this.htmlNode) {
-			var capNode;
-			com.hm_x.xml.depthIterate(this.htmlNode, function(node) {
-				capNode = node;
-				return (node.nodeType != com.hm_x.xml.TEXT_NODE);
+			this.captionNode = com.hm_x.xml.detect(this.htmlNode, function(node){
+				return node.nodeType == com.hm_x.xml.TEXT_NODE;
 			});
-			if(capNode.nodeType == com.hm_x.xml.TEXT_NODE)
-				this.captionNode = capNode;
 		}
 		
 		return this.captionNode;
@@ -116,7 +112,9 @@ if(!com.hm_x.ice.View)
 
 	this.setCaption = function(caption) {
 		var capNode = this.getCaptionNode();
-		if(capNode)
+		if(!capNode)
+			this.captionNode = this.htmlNode.appendChild(document.createTextNode(caption));
+		else
 			capNode.nodeValue = caption;
 	}
 
@@ -132,14 +130,16 @@ if(!com.hm_x.ice.View)
 	
 	// 通用 html 事件响应
 	// eventName 要求：每个单词大写开头，不含 on。如： MouseMove、Click
+	// handler 要求：handler 会被组织为响应栈，最后入栈的最先响应。如有必要，handler 可以
+	//		返回 true 表示事件已完成响应，阻断之后的 handler
 	this.setEventHandler = function(eventName, handler) {
 		var hdlName = 'on' + eventName;
 		var hdlEntry = 'on' + hdlName + 'Handler';
 		if(!(hdlName in this)) {
 			this[hdlName] = [handler];
 			this[hdlEntry] = (function(evt) {
-				this[hdlName].each(function(hdl){
-					hdl.call(this, evt);
+				this[hdlName].detect(function(hdl){
+					return hdl.call(this, evt);
 				}, this);
 			}).bindAsEventListener(this);
 			this.setOnAttach(function(){
@@ -272,10 +272,10 @@ com.hm_x.ice.CursorDiscernible = function(onEnter, onLeave, onMove) {
 }
 
 if(!com.hm_x.ice.Widget)
-	com.hm_x.ice.Widget = function(node)
+	com.hm_x.ice.Widget = function(node, onClick)
 {
 	this.base = com.hm_x.ice.ClickableView;
-	this.base(node);
+	this.base(node, onClick);
 	this.children = [];
 	
 	this.addChild = function(view, beforeChild) {

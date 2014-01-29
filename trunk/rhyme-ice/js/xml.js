@@ -49,6 +49,46 @@ loadXML : function(xmlFile)
 	return xmlDoc;
 },
 
+// 以下 API 模仿 prototype 的 Enumrable 接口
+each : function(domNode, act, context){
+	if(!domNode)
+		return false;
+	if(domNode.documentElement)
+		domNode = domNode.documentElement;
+		
+	var curNode = domNode;
+	do {
+		act.call(context, curNode);
+		curNode = this._getNextNode(curNode, domNode);
+	} while(curNode);
+},
+
+detect : function(domNode, act, context) {
+	if(!domNode)
+		return false;
+	if(domNode.documentElement)
+		domNode = domNode.documentElement;
+		
+	var curNode = domNode;
+	do {
+		if(act.call(context, curNode))
+			break;
+		else
+			curNode = this._getNextNode(curNode, domNode);
+	} while(curNode);
+	
+	return curNode;
+},
+
+filter : function(domNode, act, context) {
+	var res = [];
+	this.each(domNode, function(node){
+		if(act.call(this, node))
+			res.push(node);
+	}, context);
+	return res;
+},
+
 // 对 domNode 及其后代节点进行遍历，对每个节点应用 act 动作，并每次将 param 参数传递给 act
 // act 有两个参数： 第一个是节点的引用，第二个是 param
 // 如果 act 返回 true ，遍历继续进行，否则遍历中止

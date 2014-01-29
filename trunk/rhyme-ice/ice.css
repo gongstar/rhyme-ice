@@ -213,6 +213,7 @@
 	width : 12px;
 	height : 12px;
 	z-index: 100;
+	cursor: pointer;
 }
 
 #cause-panel .cause-grid.expanded {
@@ -222,6 +223,49 @@
 	width: auto;
 	height: auto;
 	z-index: 100;
+	cursor: default;
+}
+
+.cause-grid .cause-content {
+	width : 100%;
+	height : auto;
+	border-collapse: collapse;
+	border-spacing: 0px;
+	margin : 0px;
+	padding: 0px;
+}
+
+.cause-content .top-decoration-row {
+	height : 12px;
+}
+
+.cause-content .left-top-placeholder {
+	width : 12px;
+	margin: 0px;
+	cursor: pointer;
+}
+
+.cause-grid .decoration-border {
+	background-image: url('img/border.png');
+	background-repeat: repeat-x;
+	background-color: #EEEE77;
+	height: 12px;
+	width : auto;
+	min-width: 100px;
+}
+
+.cause-grid .content-block {
+	background-color : #EEEE77;
+}
+
+.cause-grid .content-block .title {
+	font-family: '黑体';
+	font-size: 16px;
+}
+
+.cause-grid .content-block .text {
+	font-family: '楷体', "AR PL UKai CN";
+	font-size: 16px;
 }
 
 #cp-info-banners {
