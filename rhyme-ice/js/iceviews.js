@@ -246,29 +246,37 @@ if(!com.hm_x.ice.MetricsParaWidget)
 	
 	this.updateMetrics = function(ciPara) {
 		var idx = 0;
-		ciPara.each(function(sent){ sent.m.each(function(zi, ziIdx){
-			var grid;
-			if(idx >= this.children.length)
-				grid = this.addChild(new com.hm_x.ice.MetricsGridView(zi.zi));
-			else {
-				grid = this.children[idx];
-				while(grid.metricsZi != zi.zi && grid.metricsZi == '　') {
-					this.removeChild(grid);
+		ciPara.each(function(sent){
+			sent.m.each(function(zi, ziIdx){
+				var grid;
+				if(idx >= this.children.length)
+					grid = this.addChild(new com.hm_x.ice.MetricsGridView(zi.zi));
+				else {
 					grid = this.children[idx];
-				}
-				if(grid.metricsZi != zi.zi) {
-					if(zi.isPunct)
-						grid.setCaption(zi.zi);
-					else {
-						com.hm_x.debug.assert(zi.zi == '　', '多出来的格律字只能是空格！');
-						grid = this.addChild(new com.hm_x.ice.MetricsGridView(zi.zi), grid);
+					while(grid.metricsZi != zi.zi && grid.metricsZi == '　') {
+						this.removeChild(grid);
+						grid = this.children[idx];
+					}
+					if(grid.metricsZi != zi.zi) {
+						if(zi.isPunct)
+							grid.setCaption(zi.zi);
+						else {
+							com.hm_x.debug.assert(zi.zi == '　', '多出来的格律字只能是空格！');
+							grid = this.addChild(new com.hm_x.ice.MetricsGridView(zi.zi), grid);
+						}
 					}
 				}
-			}
-			
-			grid.updateMetrics(zi, ((sent.p && sent.p.length > ziIdx) ? sent.p[ziIdx] : null));
-			++ idx;
-		}, this)}, this);
+				
+				grid.updateMetrics(zi, ((sent.p && sent.p.length > ziIdx) ? sent.p[ziIdx] : null));
+				++ idx;
+			}, this);
+		}, this);
+		
+		while(this.children.length > idx) {	// 这说明还有多余的 MetricsGrid
+			grid = this.children[idx];
+			com.hm_x.debug.assert(grid.metricsZi == '　', '被删除的格律字，只能是空格。');
+			this.removeChild(grid);
+		}
 	}
 	
 	// init
@@ -375,7 +383,7 @@ if(!com.hm_x.ice.CauseWidget)
 			this.expand(this.expanded);
 		}
 	);
-/*	this.base2 = com.hm_x.ice.CursorDiscernible;
+	this.base2 = com.hm_x.ice.CursorDiscernible;
 	this.base2(
 		function(evt) {	// onMouseEnter
 			if(!this.expanded)
@@ -425,6 +433,10 @@ if(!com.hm_x.ice.CauseWidget)
 			+ '<tr><td colspan="2" class="content-block"><table>'
 			+ 		'<tr><td class="title">错误原因</td><td class="text PH-cause"></td></tr>'
 			+		'<tr><td class="title">此字音韵</td><td class="text"><ul class="PH-rhyme"></ul></td></tr>'
+			+ 		(grid.zi.isRhyme
+						? '<tr><td class="title">当前声韵</td><td class="text"><ul class="PH-dept"></ul></td></tr>'
+						: ''
+					)
 			+ '</table></td></tr'
 		,
 		classNames : ['cause-content']
@@ -447,9 +459,27 @@ if(!com.hm_x.ice.CauseWidget)
 		pZi.tones.each(function(tone){
 			this.rhymeView.addChild(new com.hm_x.ice.View({
 				tagName : 'li',
-				innerHTML : tone.dept.name + ' - ' + tone.name + (tone.desc ? '（' + tone.desc + '）' : ''),
+				innerHTML : tone.dept.name + ' - ' + tone.name + (tone.desc ? '【' + tone.desc + '】' : ''),
 			}));
 		}, this);
+	}
+	
+	if(grid.zi.isRhyme) {
+		tmpList = this.contentView.htmlNode.select('.PH-dept');
+		com.hm_x.debug.assert(tmpList.length == 1, 'CauseGrid 中应该有且只有一个 PH-dept 域');
+		this.deptView = new com.hm_x.ice.Widget(tmpList[0]);
+		if(grid.zi.checkResult.currentDept)
+			this.deptView.addChild(new com.hm_x.ice.View({
+				tagName : 'li',
+				innerHTML : grid.zi.checkResult.currentDept.name
+			}));
+		else if(grid.zi.checkResult.candidateDept)
+			grid.zi.checkResult.candidateDept.each(function(dept){
+				this.deptView.addChild(new com.hm_x.ice.View({
+					tagName : 'li',
+					innerHTML : dept.name
+				}));
+			}, this);
 	}
 }
 com.hm_x.ice.CauseWidget.MAX_WIDTH = 300;
@@ -460,7 +490,7 @@ com.hm_x.ice.CauseWidget.UNMATCH_CAUSE = {
 	spaceUnmatch			: '有待填写',
 	punctUnmatch			: '这里需要标点',
 	zheUnmatch				: '应仄而平',
-	pingUnmatch				: '应平而仄（入）',
+	pingUnmatch				: '应平而仄',
 	rhymeRepeatUnmatch	: '须叠用前韵',
 	rhymeDisobeyUnmatch	: '出韵',
 	rhymeCandidateUnmatch: '出韵',

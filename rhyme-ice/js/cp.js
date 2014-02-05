@@ -98,32 +98,32 @@ if(!com.hm_x.ice.CiTag)
 	};
 	
 	this.getSummary = function(idx) {
-		if(com.hm_x.common.isIE && com.hm_x.common.ieVer < 10)
-			--idx;	// IE 10 以下版本与标准不符，从0开始计数
+		if(com.hm_x.common.isIE && com.hm_x.common.ieVer != 10)
+			--idx;	// 仅IE10与标准相符，其它版本从 0 开始计数，IE 11 仍用老式的 ActiveXObject，否则不支持 XPath
 		return this._getTextByPath("/词牌/格律[" + idx + "]/格");
 	};
 	
 	this.getFormName = function(idx) {
-		if(com.hm_x.common.isIE && com.hm_x.common.ieVer < 10)
-			--idx;	// IE 10 以下版本与标准不符，从0开始计数
+		if(com.hm_x.common.isIE && com.hm_x.common.ieVer != 10)
+			--idx;
 			
 		var name = this._getTextByPath("/词牌/格律[" + idx + "]/@名");
 		if(name)
 			return name;
 		
-		if(!com.hm_x.common.isIE || com.hm_x.common.ieVer >= 10)
-			--idx;	// IE 10 以上版本与标准相符，从１开始计数
+		if(!com.hm_x.common.isIE || com.hm_x.common.ieVer == 10)
+			--idx;
 		return '格' + '一二三四五六七八九十'[idx];
 	};
 	
 	this.getComment = function(idx) {
-		if(com.hm_x.common.isIE && com.hm_x.common.ieVer < 10)
-			--idx;	// IE 10 以下版本与标准不符，从0开始计数
+		if(com.hm_x.common.isIE && com.hm_x.common.ieVer != 10)
+			--idx;
 		return this._getTextByPath("/词牌/格律[" + idx + "]/注");
 	}
 	
 	this.getMetricsText = function(idx) {
-		if(com.hm_x.common.isIE && com.hm_x.common.ieVer < 10)
+		if(com.hm_x.common.isIE && com.hm_x.common.ieVer != 10)
 			--idx;	// IE 10 以下版本与标准不符，从0开始计数
 		return this._getTextByPath("/词牌/格律[" + idx + "]/律")
 			.replace(/　| /g, '')										// 全、半角空格都去除

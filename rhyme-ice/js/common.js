@@ -5,14 +5,21 @@ if(!com.hm_x)
 if(!com.hm_x.common)
 	com.hm_x.common = new (function()
 {
-	agent = navigator.userAgent;
-	iePos = agent.indexOf("MSIE");
+	var agent = navigator.userAgent;
+	var iePos = agent.indexOf("MSIE");
 	
 	this.isIE		= (iePos != -1);
 	if(this.isIE) {
-		verPos = iePos + 5;
-		verStr = agent.substr(verPos);
+		var verPos = iePos + 5;
+		var verStr = agent.substr(verPos);
 		this.ieVer = parseInt(verStr, 10);
+	}
+	// IE 11 变态了，它的识别串中居然没有 MSIE 字样
+	if(!this.isIE && agent.indexOf('Trident') != -1) {
+		this.isIE = true;
+		var VERSION_PREFIX = 'rv:';
+		verPos = agent.indexOf(VERSION_PREFIX) + VERSION_PREFIX.length;
+		this.ieVer = parseInt(agent.substr(verPos));
 	}
 	
 	this.isChrome	= agent.indexOf("Chrome") != -1;
@@ -20,10 +27,10 @@ if(!com.hm_x.common)
 
 	// 工具方法
 	/**
-		用于取极值
+		用于取最值
 		@args n1, n2, ... nn 依次列出需要比较的数，不限个数
 				functor 最后一个参数可选。它可以是一个函数，接受两个参数，返回布尔值。默认为　Math.max
-		@return 参数中最小的数
+		@return 参数中的最值
 	*/
 	this.extremum = function() {
 		if(!arguments.length)

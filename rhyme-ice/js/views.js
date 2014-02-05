@@ -36,8 +36,6 @@ if(!com.hm_x.ice.View)
 	this.destroy = function() {
 		var node = this.htmlNode;
 		this.detach();
-		if(this.onDestroy)
-			this.onDestroy(node);
 		if(node.parentNode)
 			node.parentNode.removeChild(node);
 		if(this.onDestroy)
