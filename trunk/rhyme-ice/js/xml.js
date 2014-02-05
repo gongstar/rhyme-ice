@@ -22,7 +22,7 @@ NOTATION_NODE				: 12,
 loadXML : function(xmlFile)
 {
 	var xmlDoc;
-	if(typeof(SoftXMLLib) != "undefined" && SoftXMLLib) 	// 如果有 SoftXMLLib 库，那就用它
+	if(SoftXMLLib) 	// 如果有 SoftXMLLib 库，那就用它
 		xmlDoc = new SoftXMLLib();
 	else if(window.ActiveXObject)
 		xmlDoc = new ActiveXObject('Microsoft.XMLDOM');
@@ -34,7 +34,7 @@ loadXML : function(xmlFile)
 	xmlDoc.async = false;
 	if(xmlDoc.load)
 		xmlDoc.load(xmlFile);
-	else {	// chrome 真是诡异
+	else {	// chrome
 		xmlDoc = null;
 		if(window.XMLHttpRequest) {	// chrome 似乎只能用这种方法
 			var xhttp = new XMLHttpRequest();

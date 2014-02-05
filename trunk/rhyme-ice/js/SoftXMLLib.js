@@ -37,17 +37,19 @@
 	
 	var docSoftXML;
 	function load(xmlfile){
-		if (document.implementation && document.implementation.createDocument) {
+		if (
+			!(com.hm_x.common.isIE && com.hm_x.common.ieVer >= 11)	// ie11 终于回归标准，但它丫居然不支持 xpath
+			&& document.implementation && document.implementation.createDocument
+		) {
 			xmlDOMObjSoftXML = document.implementation.createDocument("", "", null);
 			xmlDOMObjSoftXML.async=false;
 		}
-		else if (window.ActiveXObject) {
-			xmlDOMObjSoftXML = new ActiveXObject("Microsoft.XMLDOM");
-			xmlDOMObjSoftXML.async=false;
-		}
 		else {
-			alert('Your browser can\'t handle this script');
-			return;
+			xmlDOMObjSoftXML = new ActiveXObject("Microsoft.XMLDOM");
+			if (xmlDOMObjSoftXML)
+				xmlDOMObjSoftXML.async=false;
+			else
+				throw('浏览器不支持 XML');
 		}
 		
 		var lSoftXML;

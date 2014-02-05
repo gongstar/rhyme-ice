@@ -201,6 +201,9 @@ if(!com.hm_x.ice.Ci)
 				else if(this.candidateDept && !matchDepts.length)
 					mZi.checkResult.rhymeCandidateUnmatch = true;
 			}
+			
+			mZi.checkResult.currentDept = this.currentDept;
+			mZi.checkResult.candidateDept = this.candidateDept;
 		}
 	
 		mZi.checkResult.rhymeMatchCause = com.hm_x.ice.Ci.CheckResult.RHYME_MATCH_CAUSE.detect(function(cause){
