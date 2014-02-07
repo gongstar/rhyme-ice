@@ -46,6 +46,7 @@
 		}
 		else {
 			xmlDOMObjSoftXML = new ActiveXObject("Microsoft.XMLDOM");
+			this.useActiveX = true;
 			if (xmlDOMObjSoftXML)
 				xmlDOMObjSoftXML.async=false;
 			else

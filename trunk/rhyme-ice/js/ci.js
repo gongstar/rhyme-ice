@@ -184,7 +184,7 @@ if(!com.hm_x.ice.Ci)
 					}
 					else
 						return false;
-				}, this).map(function(tone){ return tone.dept });	// 需要的是 dept 列表
+				}, this).map(function(tone){ return tone.dept }).uniq();	// 需要的是 dept 列表
 				
 				if(!this.currentDept && matchDepts.length > 1) {
 					mZi.checkResult.rhymeCandidateMatch = true;
