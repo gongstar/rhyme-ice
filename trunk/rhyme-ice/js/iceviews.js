@@ -1,9 +1,7 @@
 if(!com.hm_x.ice.View)
 	alert("必须先加入 views.js 文件。");
 
-if(!com.hm_x.ice.IceWidget)
-	com.hm_x.ice.IceWidget = function(node) 
-{
+com.hm_x.ice.IceWidget = function(node) {
 	this.base = com.hm_x.ice.Widget;
 	this.base(node);
 
@@ -38,9 +36,7 @@ if(!com.hm_x.ice.IceWidget)
 	this.causePanel = this.addChild(new com.hm_x.ice.Widget($("cause-panel")));
 }
 
-if(!com.hm_x.ice.RhymeKindWidget)
-	com.hm_x.ice.RhymeKindWidget = function(node)
-{
+com.hm_x.ice.RhymeKindWidget = function(node) {
 	this.base = com.hm_x.ice.Widget;
 	this.base(node);
 	
@@ -56,9 +52,7 @@ if(!com.hm_x.ice.RhymeKindWidget)
 	});
 }
 
-if(!com.hm_x.ice.RhymeDeptWidget)
-	com.hm_x.ice.RhymeDeptWidget = function(node)
-{
+com.hm_x.ice.RhymeDeptWidget = function(node) {
 	this.base = com.hm_x.ice.Widget;
 	this.base(node);
 	
@@ -104,9 +98,7 @@ if(!com.hm_x.ice.RhymeDeptWidget)
 	});
 }
 
-if(!com.hm_x.ice.CpWidget)
-	com.hm_x.ice.CpWidget = function(node)
-{
+com.hm_x.ice.CpWidget = function(node) {
 	this.base = com.hm_x.ice.Widget;
 	this.base(node);
 	
@@ -117,9 +109,7 @@ if(!com.hm_x.ice.CpWidget)
 	this.cpListWidget = this.addChild(new com.hm_x.ice.CpListWidget($("ci-tag-list")));
 }
 
-if(!com.hm_x.ice.CpListWidget)
-	com.hm_x.ice.CpListWidget = function(node)
-{
+com.hm_x.ice.CpListWidget = function(node) {
 	this.base = com.hm_x.ice.Widget;
 	this.base(node);
 	
@@ -143,9 +133,7 @@ if(!com.hm_x.ice.CpListWidget)
 	});
 }
 
-if(!com.hm_x.ice.TitleView)
-	com.hm_x.ice.TitleView = function(node)
-{
+com.hm_x.ice.TitleView = function(node) {
 	this.base = com.hm_x.ice.Widget;
 	this.base(node);
 	
@@ -172,9 +160,7 @@ if(!com.hm_x.ice.TitleView)
 	this.formSelectView = this.addChild(new com.hm_x.ice.MetricsFormSelector($("format-selector")));
 }
 
-if(!com.hm_x.ice.MetricsFormSelector)
-	com.hm_x.ice.MetricsFormSelector = function(node)
-{
+com.hm_x.ice.MetricsFormSelector = function(node) {
 	this.base = com.hm_x.ice.Selector;
 	this.base(node);
 
@@ -186,16 +172,35 @@ if(!com.hm_x.ice.MetricsFormSelector)
 	});
 }
 
-if(!com.hm_x.ice.EditorView)
-	com.hm_x.ice.EditorView = function(node)
-{
+com.hm_x.ice.EditorView = function(node) {
 	this.base = com.hm_x.ice.TextArea;
 	this.base(node);
 
-	this.setOnChange(function() {
+	this._criteriaCheck = function(oldValue) {
+		if(this.instantEditCheckBox.isChecked())
+			return true;
+		
+		var oldCount = 0;
+		var newCount = 0;
+		$A(oldValue).each(function(c){
+			if(com.hm_x.ice.EditorView.PUNCTS.indexOf(c) != -1)
+				++ oldCount;
+		});
+		$A(this.getValue()).each(function(c){
+			if(com.hm_x.ice.EditorView.PUNCTS.indexOf(c) != -1)
+				++ newCount;
+		});
+		
+		return (oldCount != newCount);
+	}
+	
+	this.setOnChange(function(evt) {
+		if(!this._criteriaCheck(evt.oldValue))
+			return false;
+		
 		// 标点及各种符号只保留逗句分叹问顿，且转为全角标点。空格、数字转为中文。
 		var peom = $A(this.getValue()).map(function(zi){
-			var puncIdx = ' 0123456789,.;!?，。；！？、\'‘`｀"“”:：~!@#$%^&*()-_+=＠＃￥％…＆＊（）—＋－＝\\|｜[]{}「」『』<>《》/／'.indexOf(zi);
+			var puncIdx = com.hm_x.ice.EditorView.PUNCTS.indexOf(zi);
 			var puncMap = '　零一二三四五六七八九，。；！？，。；！？、';
 			if(puncIdx >= puncMap.length)
 				return '';
@@ -213,11 +218,16 @@ if(!com.hm_x.ice.EditorView)
 
 		this.getController().checkMetrics();
 	});
+	
+	this.instantEditCheckBox = new com.hm_x.ice.CheckBox($("instant-edit"));
+	if(com.hm_x.common.isChrome)	// Chrome 在打开输入法时，会把输入法正在编辑的内容放入 textarea 中。无解。
+		this.instantEditCheckBox.uncheck();
+	else
+		this.instantEditCheckBox.check();
 }
+com.hm_x.ice.EditorView.PUNCTS = ' 0123456789,.;!?，。；！？、\'‘`｀"“”:：~!@#$%^&*()-_+=＠＃￥％…＆＊（）—＋－＝\\|｜[]{}「」『』<>《》/／';
 
-if(!com.hm_x.ice.MetricsView)
-	com.hm_x.ice.MetricsView = function(node)
-{
+com.hm_x.ice.MetricsView = function(node) {
 	this.base = com.hm_x.ice.Widget;
 	this.base(node);
 	
@@ -238,9 +248,7 @@ if(!com.hm_x.ice.MetricsView)
 	}
 }
 
-if(!com.hm_x.ice.MetricsParaWidget)
-	com.hm_x.ice.MetricsParaWidget = function(metricsPara)
-{
+com.hm_x.ice.MetricsParaWidget = function(metricsPara) {
 	this.base = com.hm_x.ice.Widget;
 	this.base({	tagName	: 'p'	});
 	
@@ -285,9 +293,7 @@ if(!com.hm_x.ice.MetricsParaWidget)
 	}, this);
 }
 
-if(!com.hm_x.ice.MetricsGridView)
-	com.hm_x.ice.MetricsGridView = function(metricsZi)
-{
+com.hm_x.ice.MetricsGridView = function(metricsZi) {
 	/* 格律字表（相当于拿汉字当几千阶的编码器来用，哇哈哈哈）：
 		平曰平			平韵曰晕		平叶曰耶		平叠曰叠		平换曰欢
 		仄曰仄			仄韵曰韵		仄叶曰叶		仄叠曰铁		仄换曰换
@@ -368,14 +374,12 @@ if(!com.hm_x.ice.MetricsGridView)
 	});
 }
 
-if(!com.hm_x.ice.CauseWidget)
-	com.hm_x.ice.CauseWidget = function(grid, pZi)
-{
+com.hm_x.ice.CauseWidget = function(grid, pZi) {
 	this.base = com.hm_x.ice.Widget;
 	this.base(
 		{
 			tagName : 'div',
-			classNames : ['cause-grid'],
+			classNames : ['cause-grid']
 		},
 		function(evt) {	// onClick
 			if(this.mouseTimer)
@@ -459,7 +463,7 @@ if(!com.hm_x.ice.CauseWidget)
 		pZi.tones.each(function(tone){
 			this.rhymeView.addChild(new com.hm_x.ice.View({
 				tagName : 'li',
-				innerHTML : tone.dept.name + ' - ' + tone.name + (tone.desc ? '【' + tone.desc + '】' : ''),
+				innerHTML : tone.dept.name + ' - ' + tone.name + (tone.desc ? '【' + tone.desc + '】' : '')
 			}));
 		}, this);
 	}
@@ -497,9 +501,7 @@ com.hm_x.ice.CauseWidget.UNMATCH_CAUSE = {
 	rhymeUnknownUnmatch	: '未知原因'
 };
 
-if(!com.hm_x.ice.FootWidget)
-	com.hm_x.ice.FootWidget = function(node)
-{
+com.hm_x.ice.FootWidget = function(node) {
 	this.base = com.hm_x.ice.Widget;
 	this.base(node);
 	

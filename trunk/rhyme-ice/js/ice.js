@@ -132,6 +132,6 @@ if(typeof(com.hm_x.ice.Controller) == "undefined" || !com.hm_x.ice.Controller)
 		
 		this.widget.editorView.setValue(newPoemText);
 		this.widget.editorView.setCaretPos(caretPos);
-	},
+	}
 	
 };

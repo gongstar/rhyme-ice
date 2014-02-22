@@ -22,8 +22,21 @@ if(!com.hm_x.common)
 		this.ieVer = parseInt(agent.substr(verPos));
 	}
 	
-	this.isChrome	= agent.indexOf("Chrome") != -1;
-	this.isFirefox	= agent.indexOf("Firefox") != -1;
+	if(!this.isIE) {
+		var CHROME = 'Chrome';
+		var chromeIdx = agent.indexOf("Chrome");
+		this.isChrome	= (chromeIdx != -1);
+		if(this.isChrome)
+			this.chromeVer = parseInt(agent.substr(chromeIdx + CHROME.length + 1));
+			
+		else {
+			var FIREFOX = 'Firefox';
+			var firefoxIdx = agent.indexOf(FIREFOX);
+			this.isFirefox	= (firefoxIdx != -1);
+			if(this.isFirefox)
+				this.firefoxVer = parseInt(agent.substr(firefoxIdx + FIREFOX.length + 1));
+		}
+	}
 
 	// 工具方法
 	/**

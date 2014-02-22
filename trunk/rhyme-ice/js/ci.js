@@ -24,7 +24,7 @@ if(!com.hm_x.ice.Ci)
 		// 同样，把词分开，形成三维数组，其中段落按格律文本区分——这样要先去除原有的换行与空格
 		// 第一步先分成句（二维数组）
 		var idx = 0;
-		var poemSentences = $A(poemText.replace(/\n|　/g, '')).map(function(zi){
+		var poemSentences = $A(poemText.replace(/\n|　|\r/g, '')).map(function(zi){
 			return new com.hm_x.ice.PoemZi(zi);
 		}).groupBy(function(zi){
 			return zi.isPunct ? idx++ : idx;

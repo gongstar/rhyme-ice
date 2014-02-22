@@ -585,9 +585,12 @@ _makeStr : function _makeStr_impl(obj, noColor) {
 
 assert : function(condition, errMsg) {
 	if(!condition) {
+		alert(errMsg);
+		/*
 		this._checkTraceStack();
 		this._error("Assert fail! " + errMsg);
 		throw errMsg;
+		*/
 	}
 }
 

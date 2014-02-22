@@ -4,14 +4,13 @@ if(!com.hm_x)
 	com.hm_x = new Object();
 if(!com.hm_x.ice)
 	com.hm_x.ice = new Object();
-if(!com.hm_x.ice.View)
-	com.hm_x.ice.View = function(node)
-{
+
+com.hm_x.ice.View = function(node) {
 	// 创建参数可包括：　tagName, id, attributes(仍是一个映射表), innerHTML
 	this.create = function(params) {
 		var p = {
 			tagName		: params.tagName || 'div',
-			id				: params.id,
+			id			: params.id,
 			attributes	: params.attributes,
 			innerHTML	: params.innerHTML,
 			classNames	: params.classNames
@@ -19,17 +18,31 @@ if(!com.hm_x.ice.View)
 		if(this.onCreate)
 			this.onCreate(p);
 		
-		var node = $(document.createElement(p.tagName));
+		var node;
+		if(p.innerHTML) {
+			var tagName = p.tagName.toLowerCase();
+			if(com.hm_x.common.isIE && com.hm_x.ice.View.RO_INNER_LIST.detect(function(tag){ return tag == tagName; })) {
+				node = $(document.createElement("div"));
+				node.innerHTML = "<" + tagName + ">" + p.innerHTML + "</" + tagName + ">";
+				node = node.removeChild(node.select(tagName)[0]);
+			}
+			else {
+				node = $(document.createElement(p.tagName));
+				node.innerHTML = p.innerHTML;
+			}
+		}
+		else
+			node = $(document.createElement(p.tagName));
+
 		if(p.id)
 			node.setAttribute('id', p.id);
-		if(p.attributes)
+		if(p.attributes) {
 			for(var it in p.attributes)
 				node.setAttribute(it, p.attributes[it]);
-		if(p.innerHTML)
-			node.innerHTML = p.innerHTML;
+		}
 		if(p.classNames)
 			p.classNames.each(function(cn){ node.addClassName(cn); });
-
+				
 		this.attach(node);
 	}
 	
@@ -222,10 +235,11 @@ if(!com.hm_x.ice.View)
 			this.create(node);
 	}
 }
+// 在 IE 中，以下元素的 innerHTML 属性是只读的
+com.hm_x.ice.View.RO_INNER_LIST = ["col", "colGroup", "frameSet", "html", "head", "style", "table", "tBody", "tFoot", "tHead", "title", "tr"];
 
-if(!com.hm_x.ice.Clickable)
-	com.hm_x.ice.Clickable = function(onClick)
-{
+
+com.hm_x.ice.Clickable = function(onClick) {
 	this.setOnClick = function(onClick) {
 		this.setEventHandler('Click', onClick);
 	}
@@ -269,9 +283,7 @@ com.hm_x.ice.CursorDiscernible = function(onEnter, onLeave, onMove) {
 		this.setOnMouseMove(onMove);
 }
 
-if(!com.hm_x.ice.Widget)
-	com.hm_x.ice.Widget = function(node, onClick)
-{
+com.hm_x.ice.Widget = function(node, onClick) {
 	this.base = com.hm_x.ice.ClickableView;
 	this.base(node, onClick);
 	this.children = [];
@@ -327,16 +339,12 @@ if(!com.hm_x.ice.Widget)
 	this.setOnDestroy(this.clear);
 }
 
-if(!com.hm_x.ice.Button)
-	com.hm_x.ice.Button = function(node, onClick)
-{
+com.hm_x.ice.Button = function(node, onClick) {
 	this.base = com.hm_x.ice.ClickableView;
 	this.base(node, onClick);
 }
 
-if(!com.hm_x.ice.Selector)
-	com.hm_x.ice.Selector = function(node, onChange)
-{
+com.hm_x.ice.Selector = function(node, onChange) {
 	this.base = com.hm_x.ice.View;
 	this.base(node);
 
@@ -407,9 +415,7 @@ if(!com.hm_x.ice.Selector)
 		this.setOnChange(onChange);
 }
 
-if(!com.hm_x.ice.TextArea)
-	com.hm_x.ice.TextArea = function(node, onChange) 
-{
+com.hm_x.ice.TextArea = function(node, onChange) {
 	this.base = com.hm_x.ice.Widget;
 	this.base(node);
 
@@ -428,7 +434,7 @@ if(!com.hm_x.ice.TextArea)
 
 	this.setCaretPos = function(pos) {
 		if(this.htmlNode.setSelectionRange) {
-			this.htmlNode.focus();
+			//this.htmlNode.focus();
 			this.htmlNode.setSelectionRange(pos, pos);
 		}
 		else if(this.htmlNode.createTextRange) {
@@ -449,6 +455,26 @@ if(!com.hm_x.ice.TextArea)
 				sel2.moveStart('character', 1);
 		}
 		return pos;
+	}
+	
+	this.getSelection = function() {
+		if(!this.htmlNode)
+			return null;
+			
+		var res = '';
+		var begin = this.htmlNode.selectionStart;
+		if(begin != null) {
+			var end = this.htmlNode.selectionEnd;
+			if(end != begin)
+				res = this.getValue().substring(begin, end);
+		}
+		else {	// 老版IE
+			var sel = document.selection.createRange();
+			if(sel.parentElement() == this.htmlNode)
+				res = sel.text;
+		}
+		
+		return res;
 	}
 	
 	////////////////////////////////////////////////
@@ -483,42 +509,46 @@ if(!com.hm_x.ice.TextArea)
 	this._installObserver = function() {
 		if(this.htmlNode) {
 			var checker = (function(evt){
-				if(this._checkChange())
+				if(this._checkChange()) {
+					evt.oldValue = this.oldValue;
+					this.oldValue = this.htmlNode.value;
 					this.onChange(evt);
+				}
 			}).bindAsEventListener(this);
-			
-			Event.observe(this.htmlNode, 'change', checker);
-			Event.observe(this.htmlNode, 'keydown', checker);
-			Event.observe(this.htmlNode, 'keyup', checker);
-			Event.observe(this.htmlNode, 'mouseup', checker);
-			Event.observe(this.htmlNode, 'mousedown', checker);
-			Event.observe(this.htmlNode, 'mouseover', checker);
-			Event.observe(this.htmlNode, 'mouseout', checker);
+
+			// 除小于 9 的 IE，其它浏览器应该都支持 onInput 事件
+			if(com.hm_x.common.isIE && com.hm_x.common.ieVer < 9) {
+				Event.observe(this.htmlNode, 'change', checker);
+				Event.observe(this.htmlNode, 'keydown', checker);
+				Event.observe(this.htmlNode, 'keyup', checker);
+				Event.observe(this.htmlNode, 'mouseup', checker);
+				Event.observe(this.htmlNode, 'mousedown', checker);
+				Event.observe(this.htmlNode, 'mouseover', checker);
+				Event.observe(this.htmlNode, 'mouseout', checker);
+			}
+			else
+				Event.observe(this.htmlNode, 'input', checker);
 		}
 	}
 
 	this._removeObserver = function() {
 		if(this.htmlNode) {
-			Event.stopObserving(htmlNode, 'change');
-			Event.stopObserving(htmlNode, 'keydown');
-			Event.stopObserving(htmlNode, 'keyup');
-			Event.stopObserving(htmlNode, 'mouseup');
-			Event.stopObserving(htmlNode, 'mousedown');
-			Event.stopObserving(htmlNode, 'mouseover');
-			Event.stopObserving(htmlNode, 'mouseout');
+			if(com.hm_x.common.isIE && com.hm_x.common.ieVer < 9) {
+				Event.stopObserving(this.htmlNode, 'change');
+				Event.stopObserving(this.htmlNode, 'keydown');
+				Event.stopObserving(this.htmlNode, 'keyup');
+				Event.stopObserving(this.htmlNode, 'mouseup');
+				Event.stopObserving(this.htmlNode, 'mousedown');
+				Event.stopObserving(this.htmlNode, 'mouseover');
+				Event.stopObserving(this.htmlNode, 'mouseout');
+			}
+			else
+				Event.stopObserving(this.htmlNode, 'input');
 		}
 	}
 
 	this._checkChange = function() {
-		if(this.htmlNode) {
-			var value = this.htmlNode.value;
-			if(value != this.oldValue) {
-				this.oldValue = value;
-				return true;
-			}
-		}
-
-		return false;
+		return this.htmlNode && this.htmlNode.value != this.oldValue;
 	}
 	
 
@@ -527,4 +557,23 @@ if(!com.hm_x.ice.TextArea)
 	// initialize
 	if(onChange)
 		this.setOnChange(onChange);
+}
+
+com.hm_x.ice.CheckBox = function(node, onClick) {
+	this.base = com.hm_x.ice.ClickableView;
+	this.base(node, onClick);
+	
+	this.isChecked = function() {
+		return this.htmlNode && this.htmlNode.checked;
+	}
+	
+	this.check = function() {
+		if(this.htmlNode)
+			this.htmlNode.checked = true;
+	}
+	
+	this.uncheck = function() {
+		if(this.htmlNode)
+			this.htmlNode.checked = false;
+	}
 }
