@@ -137,9 +137,9 @@ if(!com.hm_x.ice.Rhyme.Dept.Tone)
 	this.dept = dept;
 	this.name = this.node.getAttribute('名');
 	this.desc = this.node.getAttribute('部');	// 对应原广韵韵部
-	this.isRu = (this.name == '入');
-	this.isPing = (this.name == '平');
-	this.isStrictZhe = (this.name == '仄');
+	this.isRu = (this.name.indexOf('入') != -1);
+	this.isPing = (this.name.indexOf('平') != -1);
+	this.isStrictZhe = (this.name.indexOf('上') != -1 || this.name.indexOf('去') != -1 || this.name.indexOf('仄') != -1);
 	this.isZhe = (this.isRu || this.isStrictZhe);
 	
 	this.checkZi = function(zi) {
@@ -208,6 +208,17 @@ if(!com.hm_x.ice.PsRhyme)
    this.base = com.hm_x.ice.Rhyme;
    this.base("conf/ps.xml");
 }
+com.hm_x.ice.PsRhyme.Dept = function(deptNode, rhyme)
+{
+	this.base = com.hm_x.ice.Rhyme.Dept;
+	this.base(deptNode, rhyme);
+}
+com.hm_x.ice.PsRhyme.Dept.Tone = function(toneNode, dept)
+{
+	this.base = com.hm_x.ice.Rhyme.Dept.Tone;
+	this.base(toneNode, dept)
+}
+
 
 ////////////////////////////////////////////////////////////
 // 词林正韵
