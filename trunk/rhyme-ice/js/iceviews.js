@@ -74,7 +74,7 @@ com.hm_x.ice.RhymeDeptWidget = function(node) {
 				}));
 				var toneName = toneTitle.addChild(new com.hm_x.ice.View({
 					tagName : "span",
-					innerHTML : tone.name + '声',
+					innerHTML : (tone.name.length == 1 ? tone.name + '声' : tone.name),
 					classNames : ["name"]
 				}));
 				if(tone.dept) {
